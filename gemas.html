@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Aprimoramento de Gemas - Diablo Immortal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap');
+
+        :root {
+            --color-bg: #0a0806;
+            --color-surface: #1c1814;
+            --color-border: #5a4a3a;
+            --color-text: #e0d6c3;
+            --color-text-muted: #9e907a;
+            --color-gold: #c89b3c;
+            --color-gold-hover: #e0b45c;
+            --color-red: #d33a3a;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-image: linear-gradient(rgba(10, 8, 6, 0.95), rgba(10, 8, 6, 0.95)), url('https://placehold.co/1200x800/0a0806/5a4a3a?text=.');
+            background-size: cover;
+        }
+
+        .calculator-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+
+        header {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.3);
+            border-bottom: 2px solid var(--color-border);
+            color: var(--color-gold);
+            font-size: 1.8em;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--color-gold);
+        }
+
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 25px;
+            gap: 25px;
+        }
+
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section {
+            background-color: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            color: var(--color-text-muted);
+            font-size: 1.1em;
+            margin: 0 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-row label {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-muted);
+        }
+        
+        .gem-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text);
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        select:disabled {
+            background-color: #110f0d;
+            color: var(--color-text-muted);
+            cursor: not-allowed;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--color-gold);
+            box-shadow: 0 0 8px rgba(200, 155, 60, 0.5);
+        }
+        
+        input[type="number"] { -moz-appearance: textfield; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .sacrificed-power-display {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: var(--color-bg);
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+        
+        .sacrificed-power-display p {
+            margin: 0;
+            color: var(--color-text-muted);
+        }
+        
+        .sacrificed-power-display strong {
+            color: var(--color-gold);
+            font-size: 1.2em;
+        }
+
+        /* Results Panel */
+        #results-panel {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .rank-display {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5em;
+            color: var(--color-gold);
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px var(--color-gold);
+        }
+        
+        .rank-display span {
+            font-size: 0.5em;
+            vertical-align: middle;
+        }
+
+        .resources-summary p {
+            margin: 5px 0;
+            color: var(--color-text-muted);
+        }
+
+        .resources-summary strong {
+            color: var(--color-text);
+            font-weight: 500;
+        }
+        
+        #next-rank-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        #next-rank-info p {
+            margin: 4px 0;
+        }
+        
+        .missing {
+            color: var(--color-red);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <header>Calculadora de Gemas</header>
+        <main>
+            <!-- Painel de Recursos (Esquerda) -->
+            <div class="panel">
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg class="gem-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5-10 5z"></path></svg>
+                        Inventário
+                    </h2>
+                    <div class="input-group">
+                        <div class="input-row">
+                            <label for="g1-star">
+                                <svg class="gem-icon" viewBox="0 0 100 100"><polygon points="50,5 61,39 98,39 68,62 79,96 50,75 21,96 32,62 2,39 39,39" fill="#888"/></svg>
+                                Gemas 1★
+                            </label>
+                            <input type="number" id="g1-star" min="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-row">
+                            <label for="g2-star">
+                                <svg class="gem-icon" viewBox="0 0 100 100"><polygon points="50,5 61,39 98,39 68,62 79,96 50,75 21,96 32,62 2,39 39,39" fill="#aaa"/></svg>
+                                Gemas 2★
+                            </label>
+                            <input type="number" id="g2-star" min="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-row">
+                            <label for="g5-star">
+                                <svg class="gem-icon" viewBox="0 0 100 100"><polygon points="50,5 61,39 98,39 68,62 79,96 50,75 21,96 32,62 2,39 39,39" fill="#c89b3c"/></svg>
+                                Gemas 5★
+                            </label>
+                            <input type="number" id="g5-star" min="0" placeholder="0">
+                        </div>
+                    </div>
+                     <div class="input-group">
+                        <div class="input-row">
+                            <label for="telluric-fragments">
+                                <svg class="gem-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                                Fragmentos Telúricos
+                            </label>
+                            <input type="number" id="telluric-fragments" min="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg class="gem-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                        Gema para Sacrificar
+                    </h2>
+                    <div id="sacrificed-gem-inputs">
+                        <div class="input-group">
+                            <label for="sub-type">Tipo da Gema</label>
+                            <select id="sub-type">
+                                <option value="0" selected>Nenhuma</option>
+                                <option value="1">1 Estrela</option>
+                                <option value="2">2 Estrelas</option>
+                                <option value="5">5 Estrelas</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="sub-rank">Rank da Gema</label>
+                            <select id="sub-rank">
+                                <!-- Options will be generated by JS -->
+                            </select>
+                        </div>
+                        <div class="sacrificed-power-display">
+                            <p>Poder de Gema Gerado: <strong id="sacrificed-gp-value">0</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Alvo (Direita) -->
+            <div class="panel">
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg class="gem-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                        Gema Alvo
+                    </h2>
+                    <div class="input-group">
+                        <label for="target-type">Tipo da Nova Gema</label>
+                        <select id="target-type">
+                            <option value="1">1 Estrela</option>
+                            <option value="2">2 Estrelas</option>
+                            <option value="5">5 Estrelas</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="target-current-rank">Rank Atual da Gema</label>
+                        <select id="target-current-rank">
+                             <!-- Options will be generated by JS -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="target-copies">Cópias que você já possui</label>
+                        <input type="number" id="target-copies" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div id="results-panel">
+                    <!-- Results will be injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const gemData = {
+            baseGp: { '1': 1, '2': 4, '5': 32 },
+            costs: {
+                '1': [
+                    { rank: 1, gp: 0, copies: 0 }, { rank: 2, gp: 1, copies: 0 }, 
+                    { rank: 3, gp: 5, copies: 0 }, { rank: 4, gp: 15, copies: 0 }, 
+                    { rank: 5, gp: 30, copies: 0 }, { rank: 6, gp: 50, copies: 1 }, 
+                    { rank: 7, gp: 75, copies: 2 }, { rank: 8, gp: 105, copies: 3 }, 
+                    { rank: 9, gp: 145, copies: 4 }, { rank: 10, gp: 196, copies: 5 }
+                ],
+                '2': [
+                    { rank: 1, gp: 0, copies: 0 }, { rank: 2, gp: 5, copies: 0 }, 
+                    { rank: 3, gp: 20, copies: 0 }, { rank: 4, gp: 45, copies: 1 }, 
+                    { rank: 5, gp: 85, copies: 2 }, { rank: 6, gp: 165, copies: 4 }, 
+                    { rank: 7, gp: 260, copies: 6 }, { rank: 8, gp: 525, copies: 10 }, 
+                    { rank: 9, gp: 835, copies: 14 }, { rank: 10, gp: 1845, copies: 40 }
+                ],
+                '5': [
+                    { rank: 1, gp: 0, copies: 0 }, { rank: 2, gp: 50, copies: 0 }, 
+                    { rank: 3, gp: 125, copies: 1 }, { rank: 4, gp: 225, copies: 3 }, 
+                    { rank: 5, gp: 475, copies: 7 }, { rank: 6, gp: 750, copies: 11 }, 
+                    { rank: 7, gp: 1525, copies: 24 }, { rank: 8, gp: 2350, copies: 37 }, 
+                    { rank: 9, gp: 4075, copies: 58 }, { rank: 10, gp: 4950, copies: 73 }
+                ]
+            },
+            refundGp: {
+                '1': [1, 2, 6, 16, 31, 51, 76, 106, 146, 197],
+                '2': [4, 9, 24, 49, 89, 169, 264, 529, 839, 1849],
+                '5': [32, 82, 157, 257, 507, 782, 1557, 2382, 4107, 4982]
+            }
+        };
+
+        // --- ELEMENTOS DO DOM ---
+        const inputs = document.querySelectorAll('input, select');
+        const resultsPanel = document.getElementById('results-panel');
+        const subTypeSelect = document.getElementById('sub-type');
+        const subRankSelect = document.getElementById('sub-rank');
+        const targetCurrentRankSelect = document.getElementById('target-current-rank');
+        const sacrificedGpDisplay = document.getElementById('sacrificed-gp-value');
+
+        // --- FUNÇÕES ---
+
+        /**
+         * Popula os seletores de rank.
+         */
+        function populateRankOptions() {
+            subRankSelect.innerHTML = '';
+            targetCurrentRankSelect.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Rank ${i}`;
+                subRankSelect.appendChild(option.cloneNode(true));
+                targetCurrentRankSelect.appendChild(option);
+            }
+        }
+
+        /**
+         * Função principal que calcula e renderiza os resultados.
+         */
+        function calculateAndRender() {
+            // 1. Coletar Poder de Gema (PG) disponível
+            const g1 = parseInt(document.getElementById('g1-star').value) || 0;
+            const g2 = parseInt(document.getElementById('g2-star').value) || 0;
+            const g5 = parseInt(document.getElementById('g5-star').value) || 0;
+            const telluricFragments = parseInt(document.getElementById('telluric-fragments').value) || 0;
+            
+            const fragmentConversionRate = 20; 
+            
+            let availableGp = (g1 * gemData.baseGp['1']) + 
+                              (g2 * gemData.baseGp['2']) + 
+                              (g5 * gemData.baseGp['5']) +
+                              (Math.floor(telluricFragments / fragmentConversionRate));
+
+            // Adicionar PG da gema substituída, se houver
+            let sacrificedGp = 0;
+            const subType = subTypeSelect.value;
+            if (subType !== "0") {
+                const subRank = parseInt(subRankSelect.value);
+                sacrificedGp = gemData.refundGp[subType][subRank - 1] || 0;
+                availableGp += sacrificedGp;
+            }
+            sacrificedGpDisplay.textContent = sacrificedGp.toLocaleString('pt-BR');
+
+
+            // 2. Coletar dados da gema alvo
+            const targetType = document.getElementById('target-type').value;
+            const targetCurrentRank = parseInt(document.getElementById('target-current-rank').value);
+            let availableCopies = parseInt(document.getElementById('target-copies').value) || 0;
+            
+            // 3. Calcular o rank máximo alcançável a partir do rank atual
+            const targetCosts = gemData.costs[targetType];
+            const investedCost = targetCosts[targetCurrentRank - 1]; 
+
+            let maxRank = targetCurrentRank;
+            let nextRankCost = targetCosts[targetCurrentRank]; 
+
+            for (let i = targetCurrentRank -1; i < targetCosts.length; i++) {
+                const futureCost = targetCosts[i];
+                
+                const gpNeeded = futureCost.gp - investedCost.gp;
+                const copiesNeeded = futureCost.copies - investedCost.copies;
+
+                if (availableGp >= gpNeeded && availableCopies >= copiesNeeded) {
+                    maxRank = futureCost.rank;
+                    nextRankCost = targetCosts[i + 1];
+                } else {
+                    nextRankCost = futureCost;
+                    break;
+                }
+            }
+            
+            // 4. Renderizar os resultados
+            renderResults(availableGp, availableCopies, maxRank, nextRankCost, investedCost);
+        }
+        
+        /**
+         * Renderiza a UI com os resultados do cálculo.
+         */
+        function renderResults(availableGp, availableCopies, maxRank, nextRankCost, investedCost) {
+            let html = `
+                <div class="resources-summary">
+                    <p>Poder de Gema Disponível: <strong>${availableGp.toLocaleString('pt-BR')}</strong></p>
+                    <p>Cópias Disponíveis: <strong>${availableCopies.toLocaleString('pt-BR')}</strong></p>
+                </div>
+                <div class="rank-display"><span>Rank</span> ${maxRank}</div>
+            `;
+
+            if (nextRankCost && maxRank < 10) {
+                const gpNeeded = nextRankCost.gp - investedCost.gp - availableGp;
+                const copiesNeeded = nextRankCost.copies - investedCost.copies - availableCopies;
+
+                html += `<div id="next-rank-info">`;
+                html += `<p>Para o Rank ${nextRankCost.rank}:</p>`;
+                
+                if (gpNeeded > 0) {
+                    html += `<p class="missing">Faltam ${gpNeeded.toLocaleString('pt-BR')} PG</p>`;
+                } else {
+                    html += `<p>Poder de Gema: ✓</p>`;
+                }
+
+                if (copiesNeeded > 0) {
+                    html += `<p class="missing">Faltam ${copiesNeeded.toLocaleString('pt-BR')} cópias</p>`;
+                } else {
+                    html += `<p>Cópias: ✓</p>`;
+                }
+                html += `</div>`;
+            } else {
+                 html += `<div id="next-rank-info"><p><strong>RANK MÁXIMO ALCANÇADO!</strong></p></div>`;
+            }
+
+            resultsPanel.innerHTML = html;
+        }
+
+        // --- INICIALIZAÇÃO ---
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', calculateAndRender);
+        });
+
+        subTypeSelect.addEventListener('change', () => {
+             subRankSelect.disabled = subTypeSelect.value === "0";
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            populateRankOptions();
+            subRankSelect.disabled = true; // Desabilita o rank por padrão
+            calculateAndRender();
+        });
+
+    </script>
+</body>
+</html>

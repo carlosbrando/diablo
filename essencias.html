@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilha de Essências de Druida - Diablo Immortal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para a barra de rolagem */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* bg-gray-500 */
+        }
+
+        /* CSS para a tabela responsiva (layout de cartão) */
+        @media (max-width: 768px) {
+            .responsive-table thead {
+                display: none;
+            }
+            .responsive-table tbody, .responsive-table tr {
+                display: block;
+                width: 100%;
+            }
+            .responsive-table tr {
+                margin-bottom: 1rem;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                background-color: #2d3748; /* bg-gray-800 */
+            }
+            .responsive-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                padding: 0.6rem 0;
+                border-bottom: 1px solid #4a5568; /* border-gray-600 */
+            }
+            .responsive-table tr td:last-child {
+                border-bottom: 0;
+            }
+            .responsive-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #9ca3af; /* text-gray-400 */
+                text-align: left;
+                padding-right: 1rem;
+            }
+            /* Ajuste para a descrição empilhar em vez de ficar lado a lado */
+            .responsive-table td[data-label="Descrição"] {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                gap: 0.5rem; /* Espaço entre o rótulo e o texto */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Códice Completo de Essências Lendárias do Druida</h1>
+            <p class="text-lg text-gray-400 mt-2">Pesquise e filtre todas as 72 essências de Druida em Diablo Immortal.</p>
+        </header>
+
+        <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 flex flex-col sm:flex-row gap-4 items-center sticky top-0 z-10">
+            <div class="relative w-full sm:w-2/3">
+                <input type="text" id="searchInput" placeholder="Pesquisar por nome ou descrição..." class="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <div class="relative w-full sm:w-1/3">
+                <select id="slotFilter" class="w-full appearance-none bg-gray-700 text-white border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="all">Todos os Slots</option>
+                    <option value="Mão Principal">Mão Principal</option>
+                    <option value="Mão Secundária">Mão Secundária</option>
+                    <option value="Elmo">Elmo</option>
+                    <option value="Peitoral">Peitoral</option>
+                    <option value="Ombros">Ombros</option>
+                    <option value="Calças">Calças</option>
+                </select>
+                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+             <div id="resultsCount" class="text-sm text-gray-400 whitespace-nowrap mt-2 sm:mt-0">
+                Exibindo 72 itens
+            </div>
+        </div>
+
+        <div class="bg-gray-900 md:bg-gray-800 rounded-lg md:shadow-lg">
+            <table class="w-full text-sm text-left responsive-table table-fixed">
+                <thead class="bg-gray-700 text-xs text-gray-300 uppercase tracking-wider">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 w-[15%]">Slot</th>
+                        <th scope="col" class="px-6 py-3 w-[20%]">Nome (Inglês)</th>
+                        <th scope="col" class="px-6 py-3 w-[20%]">Nome (Português)</th>
+                        <th scope="col" class="px-6 py-3 w-[45%]">Descrição</th>
+                    </tr>
+                </thead>
+                <tbody id="essencesTableBody" class="md:divide-y md:divide-gray-700">
+                    <!-- As linhas da tabela serão inseridas aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- BANCO DE DADOS DE ESSÊNCIAS ---
+        const allEssences = [
+            // Mão Principal (12)
+            { slot: "Mão Principal", name_en: "Staff of Droves", name_pt: "Cajado das Hordas", description: "`Deslizamento` também aumenta sua velocidade de ataque primário em 7% por 5 segundos ao atingir um inimigo, acumulando até 3 vezes." },
+            { slot: "Mão Principal", name_en: "Loamskull", name_pt: "Crânio Barroso", description: "`Lobisomem` agora cobre você em fogo ao se transformar, causando dano, queimando os inimigos próximos e gerando explosões de chamas ao desferir acertos críticos com seus ataques primários." },
+            { slot: "Mão Principal", name_en: "Branch of Growling Earth", name_pt: "Ramo da Terra Rugiente", description: "O dano de `Terremoto` é aumentado em 20% ao atingir um inimigo desacelerado." },
+            { slot: "Mão Principal", name_en: "The Craw", name_pt: "O Bucho", description: "`Urso` agora transforma você em um urso gigante, com alcance de ataque e vida máxima aumentados." },
+            { slot: "Mão Principal", name_en: "The Ordered Crook", name_pt: "Cajado dos Ordenados", description: "A transformação de `Lobisomem` agora faz você saltar ao local selecionado, arremessando os inimigos para cima e marcando-os. Sua chance de acerto crítico é aumentada contra inimigos marcados e sua vida é restaurada quando a marca expira." },
+            { slot: "Mão Principal", name_en: "Frenzy Reed", name_pt: "Junco Frenético", description: "A duração de `Potência Raivosa` é aumentada em 30% no estado transformado." },
+            { slot: "Mão Principal", name_en: "Burnsocket", name_pt: "Engastafogo", description: "`Tornado de Fogo` gera 1 de Energia Primitiva adicional por inimigo atingido, até o máximo de 10." },
+            { slot: "Mão Principal", name_en: "Rattling Shell", name_pt: "Casco Estridente", description: "`Evocar Lobos` também aumenta sua velocidade de movimento em 15% para cada evocação de lobo ativa sob seu controle." },
+            { slot: "Mão Principal", name_en: "Hundred Wings’ Shade", name_pt: "Sombra das Cem Asas", description: "`Enxame de Corvos` agora faz você avançar em disparada na forma de revoada de corvos, deixando você inatingível durante a investida e causando dano aos inimigos pelo caminho. Parte da recarga é devolvida se nenhum inimigo for atingido." },
+            { slot: "Mão Principal", name_en: "Lift the Lowborn", name_pt: "Levanta-plebe", description: "`Terremoto` também concede a você um escudo por 4 segundos que absorve dano e deixa você imune a 1 efeito de perda total de controle." },
+            { slot: "Mão Principal", name_en: "Nyteflurry", name_pt: "Rajada Noturna", description: "`Enxame de Corvos` agora fortalece você, fazendo com que seus Ataques Primários e Habilidades conjurem corvos que atacam os inimigos automaticamente. Esses inimigos ficam Cegos quando os corvos os atingem várias vezes." },
+            { slot: "Mão Principal", name_en: "Lunar Cradle", name_pt: "Berço Lunar", description: "`Evocar Lobos` também enfraquece os inimigos próximos, aumentando o dano que eles recebem de você." },
+            // Mão Secundária (12)
+            { slot: "Mão Secundária", name_en: "Goring Brace", name_pt: "Braçadeira Chifrada", description: "`Golpe Feroz` gera um adicional de 5 de Energia Primitiva ao acertar um inimigo. Isso só pode ocorrer uma vez a cada 3 segundos." },
+            { slot: "Mão Secundária", name_en: "Distant Hissing", name_pt: "Sibilar Distante", description: "`Trincho Dilacerante` (Lobisomem) agora talha com as duas garras, liberando um Vento Lacerante em direção aos inimigos à sua frente. Se os inimigos com queimadura estiverem próximos a você, o alcance e o dano do Vento Lacerante aumentam e o Vento repele os inimigos." },
+            { slot: "Mão Secundária", name_en: "Hobble Tooth", name_pt: "Rancadente", description: "`Esmagamento` (Urso) agora golpeia o chão para criar uma onda de choque, causando dano e desacelerando os inimigos próximos. Pode ser usado junto com outras habilidades." },
+            { slot: "Mão Secundária", name_en: "Ifeh’s Nails", name_pt: "Cravos de Ifeh", description: "`Laceração` (Urso) consome 15 de Energia Primitiva após o uso para reiniciar a recarga. Só pode ocorrer uma vez a cada 12 segundos." },
+            { slot: "Mão Secundária", name_en: "Cedarkin", name_pt: "Povo Cedreiro", description: "`Evocar Sábio da Floresta` agora evoca ativamente Sábios da Floresta protetores que orbitam você. Cada Sábio concede redução de dano e imunidade contra um efeito de perda total de controle." },
+            { slot: "Mão Secundária", name_en: "Mauler’s Mitt", name_pt: "Luva do Marretador", description: "`Esmagamento` (Urso) agora fortalece você, fazendo com que seus ataques primários golpeiem o chão e causem dano aos inimigos próximos. Acertos críticos fazem espinhos de pedra surgirem da terra, causando dano adicional." },
+            { slot: "Mão Secundária", name_en: "Scar Carver", name_pt: "Talha-cicatriz", description: "`Trincho Dilacerante` (Lobisomem) agora faz você avançar em disparada e golpear. Se acertar o ataque, você pode ativar uma sequência poderosa com um golpe amplo, causando dano adicional aos inimigos com pouca vida." },
+            { slot: "Mão Secundária", name_en: "Tuskguard", name_pt: "Guarda-presa", description: "`Evocar Sábio da Floresta` agora evoca ativamente 3 Sábios da Floresta que infectam inimigos com Sementes Fumegantes que explodem se o inimigo receber queimadura." },
+            { slot: "Mão Secundária", name_en: "Sapling Claw", name_pt: "Garra do Rebento", description: "`Evocar Sábio da Floresta` agora evoca ativamente um anel de Sábios da Floresta que persegue automaticamente os alvos e se autodestrói, causando dano a todos os inimigos próximos." },
+            { slot: "Mão Secundária", name_en: "Hungry Blades", name_pt: "Lâminas Glutonas", description: "Sua evocação de `Urso-cinzento` gera 2 de Energia Primitiva ao receber dano. Só pode ocorrer uma vez a cada segundo." },
+            { slot: "Mão Secundária", name_en: "Wulftear", name_pt: "Lágrima Lupina", description: "`Trincho Dilacerante` (Lobisomem) agora é uma série de ataques cortantes com garras que causam dano e Atordoam os inimigos. Usar outras habilidades antes aumenta o número de ataques." },
+            { slot: "Mão Secundária", name_en: "Ravenous Wilds", name_pt: "Ermos Vorazes", description: "O dano de `Armadura de Espinhos` também estilhaça a armadura inimiga, aumentando o Dano de Acerto Crítico que eles recebem por um tempo limitado, até um máximo." },
+            // Elmo (12)
+            { slot: "Elmo", name_en: "Spangblain", name_pt: "Pustulação", description: "`Tornado de Fogo` agora alveja um local, formando um Cone das Cinzas que puxa os inimigos próximos e depois explode com chamas que causam dano e arremessam os inimigos para cima." },
+            { slot: "Elmo", name_en: "Trailing-Vine", name_pt: "Vinherrante", description: "`Armadura de Espinhos` também aumenta sua chance de acerto crítico em 8% enquanto estiver ativa." },
+            { slot: "Elmo", name_en: "Spring Veil", name_pt: "Véu Primaveril", description: "`Arrancada` (Urso) agora pode ser ativada ou desativada. Quando ativada, consome Energia Primitiva para avançar em disparada continuamente, causando dano e repelindo os inimigos pelo caminho." },
+            { slot: "Elmo", name_en: "Mask of Pouncing", name_pt: "Máscara do Bote", description: "`Investida do Cervo` também aumenta sua geração de Energia Primitiva em 30% por 3 segundos." },
+            { slot: "Elmo", name_en: "Snarling Face", name_pt: "Cara Rosnada", description: "`Avanço` (Lobisomem) agora faz você dar um rápido passo para trás antes de investir. Se acertar um inimigo, ativa um gancho sequencial poderoso com as duas garras que arremessa os inimigos para cima." },
+            { slot: "Elmo", name_en: "Bounding Accuracy", name_pt: "Precisão Arrancadora", description: "`Arrancada` (Urso) agora salta até o alvo, causando dano a todos os inimigos próximos e aumentando a velocidade de ataque e a chance de acerto crítico dos seus ataques primários." },
+            { slot: "Elmo", name_en: "Bonfire Crest", name_pt: "Brasão da Fogueira", description: "`Tornado de Fogo` agora libera uma explosão no local selecionado que causa dano e queima os inimigos próximos. A habilidade pode ser ativada nos acertos críticos de ataques primários." },
+            { slot: "Elmo", name_en: "The Yawning Maw", name_pt: "A Bocarra Bocejante", description: "`Evocar Urso-cinzento` agora evoca um urso flamejante que queima continuamente os inimigos próximos. Ele pode ser comandado a saltar a um local, causando dano aos inimigos e aumentando a própria chance de acerto crítico." },
+            { slot: "Elmo", name_en: "Ash Monger", name_pt: "Fomentacinzas", description: "`Tornado de Fogo` agora libera um anel de fogo crescente, causando dano e queimando-os. Os inimigos em chamas explodem ao ficar com a vida baixa demais." },
+            { slot: "Elmo", name_en: "Gilded Majesty", name_pt: "Majestade Dourada", description: "`Evocar Urso-cinzento` agora evoca um urso imbuído com o poder implacável da mata, capaz de atacar e atordoar com espinhos, consumir Energia Primitiva para reviver e receber um comando para saltar em um grupo de inimigos e provocá-los." },
+            { slot: "Elmo", name_en: "Wildbrute", name_pt: "Fera Selvagem", description: "`Avanço` (Lobisomem) agora faz você piscar para fora da vista, tornando-o inatingível enquanto avança, causando dano aos inimigos em seu caminho. `Avanço` pode ser usado várias vezes em rápida sucessão." },
+            { slot: "Elmo", name_en: "Veiled Vice", name_pt: "Vício Velado", description: "`Uivo` (Lobisomem) também aplica Medo aos inimigos. Inimigos abaixo de uma certa porcentagem de Vida ficam com Medo por um tempo limitado. Este efeito não pode amedrontar o mesmo inimigo mais de uma vez a cada poucos segundos." },
+            // Peitoral (12)
+            { slot: "Peitoral", name_en: "Saved by Nature", name_pt: "Salvo pela Natureza", description: "`Círculo da Vida` agora concede uma semente regenerativa aos aliados próximos que cura constantemente e é consumida para curar um valor maior se a vida ficar baixa demais." },
+            { slot: "Peitoral", name_en: "Coat of Fecundity", name_pt: "Casco da Fertilidade", description: "`Armadura de Espinhos` agora cria uma área de vinhas espinhosas que segue você, causando dano contínuo aos inimigos próximos e infectando-os com Sementes Fumegantes que explodem se o inimigo infectado estiver queimando." },
+            { slot: "Peitoral", name_en: "Earthbindings", name_pt: "Laços Terrenos", description: "`Terremoto` agora golpeia o chão e fortalece você, fazendo com que você libere tremores secundários ao se mover a cada poucos metros." },
+            { slot: "Peitoral", name_en: "Life Begets", name_pt: "Geravida", description: "`Círculo da Vida` agora cura você passivamente enquanto você evita receber danos e pode ser ativado para gerar uma explosão de energia que causa dano aos inimigos próximos e os atordoa. A explosão é ativada automaticamente se a sua vida ficar baixa demais." },
+            { slot: "Peitoral", name_en: "Wild Surrender", name_pt: "Renúncia Selvagem", description: "`Círculo da Vida` agora é canalizado, curando a vida continuamente e gerando Energia Primitiva. Você recebe redução de dano, mas não pode se mover enquanto canaliza." },
+            { slot: "Peitoral", name_en: "Saw Notch", name_pt: "Corte Serrado", description: "Na forma de `Urso`, cada inimigo abatido aumenta sua velocidade de ataque e de movimento em 8% por 4 segundos, acumulando até 3 vezes." },
+            { slot: "Peitoral", name_en: "Barbmantle", name_pt: "Mantofarpa", description: "`Armadura de Espinhos` agora só protege você e, enquanto está ativa, faz seus ataques dispersarem espinhos, causando dano a inimigos próximos. A habilidade pode ser ativada com ataque primário." },
+            { slot: "Peitoral", name_en: "Flesh is Fertile Ground", name_pt: "Pele Terra Fértil", description: "`Armadura de Espinhos` agora pode ser ativada ou desativada. Quando ativada, ela consome Energia Primitiva para conceder redução de dano a todos aliados próximos e causar dano contínuo aos inimigos próximos." },
+            { slot: "Peitoral", name_en: "Breakplates", name_pt: "Quebra-placas", description: "`Tornado de Fogo` também estilhaça a armadura dos inimigos, aumentando o dano que recebem em 10% por 3 segundos." },
+            { slot: "Peitoral", name_en: "Whispers of the Soil", name_pt: "Sussurrassolo", description: "`Terremoto` agora conjura um maelstrom turbulento de rochas no local selecionado, causando dano e petrificando os inimigos de dentro. Evocações aliadas dentro do maelstrom recebem um casco protetor, recebendo dano reduzido e imunidade a repulsão e a efeitos de perda de controle." },
+            { slot: "Peitoral", name_en: "Sharval's Blessing", name_pt: "Bênção de Sharval", description: "Enquanto na forma de `Lobisomem`, você ganha Dreno de Vida adicional contra inimigos que estão abaixo de 50% de Vida." },
+            { slot: "Peitoral", name_en: "Tokens of Vigilance", name_pt: "Símbolos de Vigilância", description: "`Potência Raivosa` também faz com que Ataques Primários causem dano adicional igual a uma porcentagem da sua vida máxima." },
+            // Ombros (12)
+            { slot: "Ombros", name_en: "Grand Endurance", name_pt: "Resistência Suprema", description: "`Arrancada` (Urso) agora faz você saltar até o local de um alvo, causando dano a inimigos próximos e obtendo um escudo de absorção. Enquanto o escudo estiver ativado, você receberá dano reduzido." },
+            { slot: "Ombros", name_en: "Brae’s Bark", name_pt: "Latido da Colina", description: "Na forma de `Lobisomem`, você causa 10% de dano aumentado contra inimigos sob algum efeito de dano contínuo." },
+            { slot: "Ombros", name_en: "Peatspald", name_pt: "Lascaturfa", description: "`Arrancada` (Urso) aumenta sua velocidade de movimento em 40% por 3 segundos ao atingir um inimigo." },
+            { slot: "Ombros", name_en: "Promise the Obscure", name_pt: "Escuridão Prometida", description: "`Laceração` (Urso) agora desfere uma sequência de quatro ataques conforme você se move a uma direção, repelindo os inimigos. Você fica imune à repulsão e perda de controle durante os ataques." },
+            { slot: "Ombros", name_en: "All Are Prey", name_pt: "Tudo-presa", description: "Na forma de `Lobisomem`, você causa 20% a mais de dano aos inimigos, reduzido em 5% para cada aliado em um raio de 5 metros dos inimigos." },
+            { slot: "Ombros", name_en: "Pile of Plenty", name_pt: "Pilha da Fartura", description: "A recarga de `Arrancada` (Urso) é reduzida em 0,5 segundos sempre que seu ataque primário acerta um inimigo, até o máximo de 2 segundos." },
+            { slot: "Ombros", name_en: "Thrill of the Hunt", name_pt: "Emoção da Caçada", description: "Na forma de `Lobisomem`, gera 3 de Energia Primitiva para cada inimigo abatido. Só pode ser ativado uma vez a cada segundo." },
+            { slot: "Ombros", name_en: "Bar-Ghaist Beacon", name_pt: "Sinal Barraspectro", description: "`Evocar Lobos` agora evoca lobos de fogo para lutar ao seu lado e queimar inimigos. Eles podem ser comandados a cuspir fogo e receber velocidade de ataque aumentada." },
+            { slot: "Ombros", name_en: "Soarskull", name_pt: "Planacrânio", description: "`Enxame de Corvos` também aumenta sua velocidade de movimento em 30% por 3 segundos." },
+            { slot: "Ombros", name_en: "The Great One", name_pt: "Maioral", description: "`Evocar Lobos` agora evoca um único Lobo Atroz que consome Energia Primitiva ao ser atingido para receber dano reduzido. É possível comandar o Lobo a investir aos inimigos." },
+            { slot: "Ombros", name_en: "Kiegfran", name_pt: "Kiegfran", description: "`Enxame de Corvos` também gera Energia Primitiva quando atinge um inimigo, mas este efeito não pode ocorrer com mais frequência do que uma vez a cada certo período." },
+            { slot: "Ombros", name_en: "Lethal Embrace", name_pt: "Abraço Letal", description: "Transformar-se em um `Lobisomem` aumenta sua Taxa de Esquiva por alguns segundos para cada ponto de Energia Primitiva que você possui atualmente, até um máximo." },
+            // Calças (12)
+            { slot: "Calças", name_en: "Unstoppable Redress", name_pt: "Reparação Implacável", description: "`Trincho Dilacerante` (Lobisomem) pode ser usado enquanto estiver sob efeitos de perda total de controle, consumindo 15 de Energia Primitiva e removendo o status." },
+            { slot: "Calças", name_en: "Thrivegreaves", name_pt: "Grevas Prósperas", description: "`Trincho Dilacerante` (Lobisomem) consome 5 de Energia Primitiva, aumentando sua chance de acerto crítico em 25%." },
+            { slot: "Calças", name_en: "Shattergrouse", name_pt: "Galo Estilhaço", description: "`Esmagamento` (Urso) também estilhaça a armadura dos inimigos, aumentando o dano que recebem em 15% por 3 segundos." },
+            { slot: "Calças", name_en: "Scorched Berth", name_pt: "Leito Calcinado", description: "`Investida do Cervo` agora salta ao local selecionado, gerando Energia Primitiva com base no número de inimigos atingidos." },
+            { slot: "Calças", name_en: "Ravager’s Trews", name_pt: "Calças da Destruição", description: "`Avanço` (Lobisomem) causa mais 25% de dano, mas consome 5 de Energia Primitiva ao ser usado." },
+            { slot: "Calças", name_en: "Ald Abundance", name_pt: "Velha Fartura", description: "`Potência Raivosa` agora aumenta sua vida máxima até você morrer e aumenta temporariamente o dano dos seus ataques primários com base na sua Energia Primitiva atual." },
+            { slot: "Calças", name_en: "Savagery Adored", name_pt: "Selvageria Venerada", description: "Usar `Trincho Dilacerante` (Lobisomem) também aumenta a chance de acerto crítico de ataques primários em 15% por 3 segundos." },
+            { slot: "Calças", name_en: "Lightling Drape", name_pt: "Pano Iluminado", description: "O dano de `Evocar Sábio da Floresta` aumenta em 5% por 5 segundos cada vez que ataca, até o máximo de 20%." },
+            { slot: "Calças", name_en: "Occasional Pillar", name_pt: "Pilar Casual", description: "`Pedra Impetuosa` causa 25% a mais de dano, mas consome mais 25% de Energia Primitiva." },
+            { slot: "Calças", name_en: "Mudrooters", name_pt: "Radículama", description: "Suas evocações de lobo curam você em 30% do dano que eles causam." },
+            { slot: "Calças", name_en: "Cackling Frenzy", name_pt: "Frenesi Risonho", description: "`Trincho Dilacerante` (Lobisomem) agora também aumenta seu Dreno de Vida contra os inimigos atingidos por um tempo limitado, com o efeito acumulando até um máximo." },
+            { slot: "Calças", name_en: "Tough Love", name_pt: "Amor Ríspido", description: "Ativar `Evocar Sábio da Floresta` aumenta o dano de suas evocações por um tempo limitado para cada evocação ativa, até um máximo." },
+        ];
+
+        // --- LÓGICA DA APLICAÇÃO ---
+        const tableBody = document.getElementById('essencesTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const slotFilter = document.getElementById('slotFilter');
+        const resultsCount = document.getElementById('resultsCount');
+
+        /**
+         * Renderiza as linhas da tabela com base em uma lista de essências.
+         * @param {Array} essences - A lista de essências a ser exibida.
+         */
+        function renderTable(essences) {
+            tableBody.innerHTML = ''; // Limpa a tabela antes de renderizar
+            if (essences.length === 0) {
+                 tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-10 px-6 text-gray-400">Nenhuma essência encontrada.</td></tr>`;
+            } else {
+                essences.forEach(essence => {
+                    const row = `
+                        <tr class="md:hover:bg-gray-700/50 transition-colors duration-150">
+                            <td data-label="Slot" class="px-6 py-4 md:whitespace-nowrap">${essence.slot}</td>
+                            <td data-label="Nome (Inglês)" class="px-6 py-4 font-medium text-white">${essence.name_en}</td>
+                            <td data-label="Nome (Português)" class="px-6 py-4 font-medium text-white">${essence.name_pt}</td>
+                            <td data-label="Descrição" class="px-6 py-4 text-gray-300 break-words">${highlightKeywords(essence.description)}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+            // Atualiza a contagem de resultados
+            const count = essences.length;
+            const itemText = count === 1 ? 'item' : 'itens';
+            resultsCount.textContent = `Exibindo ${count} ${itemText}`;
+        }
+
+        /**
+         * Destaca palavras-chave (habilidades entre crases) na descrição.
+         * @param {string} text - O texto da descrição.
+         * @returns {string} - O texto com HTML para destacar as palavras-chave.
+         */
+        function highlightKeywords(text) {
+            // Adiciona um espaço antes da crase de abertura para garantir a correspondência correta
+            // e destaca a palavra-chave com classes do Tailwind CSS.
+            return text.replace(/`([^`]+)`/g, '<code class="bg-gray-600 text-blue-300 font-mono rounded px-1 py-0.5 text-xs">\$1</code>');
+        }
+
+        /**
+         * Filtra e renderiza a tabela com base nos valores dos inputs.
+         */
+        function filterAndRender() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedSlot = slotFilter.value;
+
+            const filteredEssences = allEssences.filter(essence => {
+                const matchesSearch = 
+                    essence.name_en.toLowerCase().includes(searchTerm) ||
+                    essence.name_pt.toLowerCase().includes(searchTerm) ||
+                    essence.description.toLowerCase().includes(searchTerm);
+                
+                const matchesSlot = 
+                    selectedSlot === 'all' || essence.slot === selectedSlot;
+
+                return matchesSearch && matchesSlot;
+            });
+
+            renderTable(filteredEssences);
+        }
+
+        // --- EVENT LISTENERS ---
+        // Adiciona listeners para os inputs de filtro
+        searchInput.addEventListener('input', filterAndRender);
+        slotFilter.addEventListener('change', filterAndRender);
+
+        // --- INICIALIZAÇÃO ---
+        // Renderiza a tabela inicial com todos os dados quando a página carrega.
+        window.onload = () => {
+            renderTable(allEssences);
+        };
+    </script>
+</body>
+</html>
