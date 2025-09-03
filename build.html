@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor de Builds de Druida - Diablo Immortal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            background-image: radial-gradient(#1f2937 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        /* Estilo para a barra de rolagem */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        .modal-overlay, .tooltip {
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.2s ease-in-out;
+        }
+        .gear-slot, .skill-slot {
+            transition: all 0.2s ease-in-out;
+        }
+        .gear-slot:not(.disabled):hover, .skill-slot:hover {
+            transform: scale(1.05);
+            border-color: #3b82f6;
+        }
+        .tooltip {
+            pointer-events: none; /* Garante que o tooltip não interfira com o mouse */
+        }
+    </style>
+</head>
+<body class="text-gray-200 antialiased">
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="fixed z-50 hidden max-w-xs p-3 text-sm font-normal text-white bg-gray-900 border border-gray-700 rounded-lg shadow-lg tooltip">
+        <h3 id="tooltip-title" class="font-semibold text-blue-300"></h3>
+        <p id="tooltip-desc" class="mt-1 text-gray-300"></p>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-40 hidden modal-overlay"></div>
+
+    <!-- Essence Modal -->
+    <div id="essence-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden p-4" onclick="closeAllModals()">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col modal-content scale-95" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 id="essence-modal-title" class="text-xl font-bold text-white">Selecionar Essência</h2>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="essence-modal-content" class="p-4 space-y-3 overflow-y-auto">
+                <!-- Conteúdo dinâmico -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skill Modal -->
+    <div id="skill-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden p-4" onclick="closeAllModals()">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col modal-content scale-95" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 id="skill-modal-title" class="text-xl font-bold text-white">Selecionar Habilidade</h2>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="skill-modal-content" class="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto">
+                <!-- Conteúdo dinâmico -->
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl sm:text-5xl font-bold text-white tracking-tight">Construtor de Builds de Druida</h1>
+            <p class="text-lg text-gray-400 mt-2 max-w-2xl mx-auto">Crie e visualize sua build de Druida para Diablo Immortal de forma interativa.</p>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Coluna de Controles (Esquerda) -->
+            <div class="lg:w-[45%] bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-6 rounded-xl shadow-lg flex flex-col gap-6">
+                <div>
+                    <h2 class="text-2xl font-semibold text-white mb-4">1. Habilidades</h2>
+                    <div id="skill-selection-container" class="flex flex-wrap justify-center gap-4">
+                        <!-- Slots de Habilidade serão inseridos aqui -->
+                    </div>
+                </div>
+                 <div class="mt-auto pt-6">
+                    <button id="resetBuildBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 011-1zm10 8a1 1 0 011-1v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 011.885-.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101z" clip-rule="evenodd" /></svg>
+                        Limpar Build
+                    </button>
+                </div>
+            </div>
+
+            <!-- Coluna da Build (Direita) -->
+            <div class="lg:w-[55%]">
+                <div class="sticky top-6">
+                    <h2 class="text-2xl font-bold text-white mb-4 text-center lg:text-left">2. Equipamento</h2>
+                    <div id="build-sheet" class="grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto">
+                        <!-- Layout da Ficha de Personagem -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- BANCO DE DADOS ---
+        const allEssences = [];
+        const druidSkills = {};
+        const transformationSubSkills = {};
+        
+        // --- BANCO DE DADOS COMPLETOS ---
+        allEssences.push(
+            { slot: "Mão Principal", name_en: "Staff of Droves", name_pt: "Cajado das Hordas", description: "`Deslizamento` também aumenta sua velocidade de ataque primário em 7% por 5 segundos ao atingir um inimigo, acumulando até 3 vezes." },
+            { slot: "Mão Principal", name_en: "Loamskull", name_pt: "Crânio Barroso", description: "`Lobisomem` agora cobre você em fogo ao se transformar, causando dano, queimando os inimigos próximos e gerando explosões de chamas ao desferir acertos críticos com seus ataques primários." },
+            { slot: "Mão Principal", name_en: "Branch of Growling Earth", name_pt: "Ramo da Terra Rugiente", description: "O dano de `Terremoto` é aumentado em 20% ao atingir um inimigo desacelerado." },
+            { slot: "Mão Principal", name_en: "The Craw", name_pt: "O Bucho", description: "`Urso` agora transforma você em um urso gigante, com alcance de ataque e vida máxima aumentados." },
+            { slot: "Mão Principal", name_en: "The Ordered Crook", name_pt: "Cajado dos Ordenados", description: "A transformação de `Lobisomem` agora faz você saltar ao local selecionado, arremessando os inimigos para cima e marcando-os. Sua chance de acerto crítico é aumentada contra inimigos marcados e sua vida é restaurada quando a marca expira." },
+            { slot: "Mão Principal", name_en: "Frenzy Reed", name_pt: "Junco Frenético", description: "A duração de `Potência Raivosa` é aumentada em 30% no estado transformado." },
+            { slot: "Mão Principal", name_en: "Burnsocket", name_pt: "Engastafogo", description: "`Tornado de Fogo` gera 1 de Energia Primitiva adicional por inimigo atingido, até o máximo de 10." },
+            { slot: "Mão Principal", name_en: "Rattling Shell", name_pt: "Casco Estridente", description: "`Evocar Lobos` também aumenta sua velocidade de movimento em 15% para cada evocação de lobo ativa sob seu controle." },
+            { slot: "Mão Principal", name_en: "Hundred Wings’ Shade", name_pt: "Sombra das Cem Asas", description: "`Enxame de Corvos` agora faz você avançar em disparada na forma de revoada de corvos, deixando você inatingível durante a investida e causando dano aos inimigos pelo caminho. Parte da recarga é devolvida se nenhum inimigo for atingido." },
+            { slot: "Mão Principal", name_en: "Lift the Lowborn", name_pt: "Levanta-plebe", description: "`Terremoto` também concede a você um escudo por 4 segundos que absorve dano e deixa você imune a 1 efeito de perda total de controle." },
+            { slot: "Mão Principal", name_en: "Nyteflurry", name_pt: "Turbilhão da Noite", description: "`Enxame de Corvos` agora fortalece você, fazendo com que seus Ataques Primários e Habilidades conjurem corvos que atacam os inimigos automaticamente. Esses inimigos ficam Cegos quando os corvos os atingem várias vezes." },
+            { slot: "Mão Principal", name_en: "Lunar Cradle", name_pt: "Berço Lunar", description: "`Evocar Lobos` também enfraquece os inimigos próximos, aumentando o dano que eles recebem de você." },
+            { slot: "Mão Secundária", name_en: "Goring Brace", name_pt: "Braçadeira Chifrada", description: "`Golpe Feroz` gera um adicional de 5 de Energia Primitiva ao acertar um inimigo. Isso só pode ocorrer uma vez a cada 3 segundos." },
+            { slot: "Mão Secundária", name_en: "Distant Hissing", name_pt: "Sibilar Distante", description: "`Trincho Dilacerante` (Lobisomem) agora talha com as duas garras, liberando um Vento Lacerante em direção aos inimigos à sua frente. Se os inimigos com queimadura estiverem próximos a você, o alcance e o dano do Vento Lacerante aumentam e o Vento repele os inimigos." },
+            { slot: "Mão Secundária", name_en: "Hobble Tooth", name_pt: "Rancadente", description: "`Esmagamento` (Urso) agora golpeia o chão para criar uma onda de choque, causando dano e desacelerando os inimigos próximos. Pode ser usado junto com outras habilidades." },
+            { slot: "Mão Secundária", name_en: "Ifeh’s Nails", name_pt: "Cravos de Ifeh", description: "`Laceração` (Urso) consome 15 de Energia Primitiva após o uso para reiniciar a recarga. Só pode ocorrer uma vez a cada 12 segundos." },
+            { slot: "Mão Secundária", name_en: "Cedarkin", name_pt: "Povo Cedreiro", description: "`Evocar Sábio da Floresta` agora evoca ativamente Sábios da Floresta protetores que orbitam você. Cada Sábio concede redução de dano e imunidade contra um efeito de perda total de controle." },
+            { slot: "Mão Secundária", name_en: "Mauler’s Mitt", name_pt: "Luva do Marretador", description: "`Esmagamento` (Urso) agora fortalece você, fazendo com que seus ataques primários golpeiem o chão e causem dano aos inimigos próximos. Acertos críticos fazem espinhos de pedra surgirem da terra, causando dano adicional." },
+            { slot: "Mão Secundária", name_en: "Scar Carver", name_pt: "Talha-cicatriz", description: "`Trincho Dilacerante` (Lobisomem) agora faz você avançar em disparada e golpear. Se acertar o ataque, você pode ativar uma sequência poderosa com um golpe amplo, causando dano adicional aos inimigos com pouca vida." },
+            { slot: "Mão Secundária", name_en: "Tuskguard", name_pt: "Guarda-presa", description: "`Evocar Sábio da Floresta` agora evoca ativamente 3 Sábios da Floresta que infectam inimigos com Sementes Fumegantes que explodem se o inimigo receber queimadura." },
+            { slot: "Mão Secundária", name_en: "Sapling Claw", name_pt: "Garra do Rebento", description: "`Evocar Sábio da Floresta` agora evoca ativamente um anel de Sábios da Floresta que persegue automaticamente os alvos e se autodestrói, causando dano a todos os inimigos próximos." },
+            { slot: "Mão Secundária", name_en: "Hungry Blades", name_pt: "Lâminas Glutonas", description: "Sua evocação de `Urso-cinzento` gera 2 de Energia Primitiva ao receber dano. Só pode ocorrer uma vez a cada segundo." },
+            { slot: "Mão Secundária", name_en: "Wulftear", name_pt: "Lágrima Lupina", description: "`Trincho Dilacerante` (Lobisomem) agora é uma série de ataques cortantes com garras que causam dano e Atordoam os inimigos. Usar outras habilidades antes aumenta o número de ataques." },
+            { slot: "Mão Secundária", name_en: "Ravenous Wilds", name_pt: "Ermos Vorazes", description: "O dano de `Armadura de Espinhos` também estilhaça a armadura inimiga, aumentando o Dano de Acerto Crítico que eles recebem por um tempo limitado, até um máximo." },
+            { slot: "Elmo", name_en: "Spangblain", name_pt: "Pustulação", description: "`Tornado de Fogo` agora alveja um local, formando um Cone das Cinhas que puxa os inimigos próximos e depois explode com chamas que causam dano e arremessam os inimigos para cima." },
+            { slot: "Elmo", name_en: "Trailing-Vine", name_pt: "Vinherrante", description: "`Armadura de Espinhos` também aumenta sua chance de acerto crítico em 8% enquanto estiver ativa." },
+            { slot: "Elmo", name_en: "Spring Veil", name_pt: "Véu Primaveril", description: "`Arrancada` (Urso) agora pode ser ativada ou desativada. Quando ativada, consome Energia Primitiva para avançar em disparada continuamente, causando dano e repelindo os inimigos pelo caminho." },
+            { slot: "Elmo", name_en: "Mask of Pouncing", name_pt: "Máscara do Bote", description: "`Investida do Cervo` também aumenta sua geração de Energia Primitiva em 30% por 3 segundos." },
+            { slot: "Elmo", name_en: "Snarling Face", name_pt: "Cara Rosnada", description: "`Avanço` (Lobisomem) agora faz você dar um rápido passo para trás antes de investir. Se acertar um inimigo, ativa um gancho sequencial poderoso com as duas garras que arremessa os inimigos para cima." },
+            { slot: "Elmo", name_en: "Bounding Accuracy", name_pt: "Precisão Arrancadora", description: "`Arrancada` (Urso) agora salta até o alvo, causando dano a todos os inimigos próximos e aumentando a velocidade de ataque e a chance de acerto crítico dos seus ataques primários." },
+            { slot: "Elmo", name_en: "Bonfire Crest", name_pt: "Brasão da Fogueira", description: "`Tornado de Fogo` agora libera uma explosão no local selecionado que causa dano e queima os inimigos próximos. A habilidade pode ser ativada nos acertos críticos de ataques primários." },
+            { slot: "Elmo", name_en: "The Yawning Maw", name_pt: "A Bocarra Bocejante", description: "`Evocar Urso-cinzento` agora evoca um urso flamejante que queima continuamente os inimigos próximos. Ele pode ser comandado a saltar a um local, causando dano aos inimigos e aumentando a própria chance de acerto crítico." },
+            { slot: "Elmo", name_en: "Ash Monger", name_pt: "Fomentacinzas", description: "`Tornado de Fogo` agora libera um anel de fogo crescente, causando dano e queimando-os. Os inimigos em chamas explodem ao ficar com a vida baixa demais." },
+            { slot: "Elmo", name_en: "Gilded Majesty", name_pt: "Majestade Dourada", description: "`Evocar Urso-cinzento` agora evoca um urso imbuído com o poder implacável da mata, capaz de atacar e atordoar com espinhos, consumir Energia Primitiva para reviver e receber um comando para saltar em um grupo de inimigos e provocá-los." },
+            { slot: "Elmo", name_en: "Wildbrute", name_pt: "Fera Selvagem", description: "`Avanço` (Lobisomem) agora faz você piscar para fora da vista, tornando-o inatingível enquanto avança, causando dano aos inimigos em seu caminho. `Avanço` pode ser usado várias vezes em rápida sucessão." },
+            { slot: "Elmo", name_en: "Veiled Vice", name_pt: "Vício Velado", description: "`Uivo` (Lobisomem) também aplica Medo aos inimigos. Inimigos abaixo de uma certa porcentagem de Vida ficam com Medo por um tempo limitado. Este efeito não pode amedrontar o mesmo inimigo mais de uma vez a cada poucos segundos." },
+            { slot: "Peitoral", name_en: "Saved by Nature", name_pt: "Salvo pela Natureza", description: "`Círculo da Vida` agora concede uma semente regenerativa aos aliados próximos que cura constantemente e é consumida para curar um valor maior se a vida ficar baixa demais." },
+            { slot: "Peitoral", name_en: "Coat of Fecundity", name_pt: "Casco da Fertilidade", description: "`Armadura de Espinhos` agora cria uma área de vinhas espinhosas que segue você, causando dano contínuo aos inimigos próximos e infectando-os com Sementes Fumegantes que explodem se o inimigo infectado estiver queimando." },
+            { slot: "Peitoral", name_en: "Earthbindings", name_pt: "Laços Terrenos", description: "`Terremoto` agora golpeia o chão e fortalece você, fazendo com que você libere tremores secundários ao se mover a cada poucos metros." },
+            { slot: "Peitoral", name_en: "Life Begets", name_pt: "Geravida", description: "`Círculo da Vida` agora cura você passivamente enquanto você evita receber danos e pode ser ativado para gerar uma explosão de energia que causa dano aos inimigos próximos e os atordoa. A explosão é ativada automaticamente se a sua vida ficar baixa demais." },
+            { slot: "Peitoral", name_en: "Wild Surrender", name_pt: "Renúncia Selvagem", description: "`Círculo da Vida` agora é canalizado, curando a vida continuamente e gerando Energia Primitiva. Você recebe redução de dano, mas não pode se mover enquanto canaliza." },
+            { slot: "Peitoral", name_en: "Saw Notch", name_pt: "Corte Serrado", description: "Na forma de `Urso`, cada inimigo abatido aumenta sua velocidade de ataque e de movimento em 8% por 4 segundos, acumulando até 3 vezes." },
+            { slot: "Peitoral", name_en: "Barbmantle", name_pt: "Mantofarpa", description: "`Armadura de Espinhos` agora só protege você e, enquanto está ativa, faz seus ataques dispersarem espinhos, causando dano a inimigos próximos. A habilidade pode ser ativada com ataque primário." },
+            { slot: "Peitoral", name_en: "Flesh is Fertile Ground", name_pt: "Pele Terra Fértil", description: "`Armadura de Espinhos` agora pode ser ativada ou desativada. Quando ativada, ela consome Energia Primitiva para conceder redução de dano a todos aliados próximos e causar dano contínuo aos inimigos próximos." },
+            { slot: "Peitoral", name_en: "Breakplates", name_pt: "Quebra-placas", description: "`Tornado de Fogo` também estilhaça a armadura dos inimigos, aumentando o dano que recebem em 10% por 3 segundos." },
+            { slot: "Peitoral", name_en: "Whispers of the Soil", name_pt: "Sussurrassolo", description: "`Terremoto` agora conjura um maelstrom turbulento de rochas no local selecionado, causando dano e petrificando os inimigos de dentro. Evocações aliadas dentro do maelstrom recebem um casco protetor, recebendo dano reduzido e imunidade a repulsão e a efeitos de perda de controle." },
+            { slot: "Peitoral", name_en: "Sharval's Blessing", name_pt: "Bênção de Sharval", description: "Enquanto na forma de `Lobisomem`, você ganha Dreno de Vida adicional contra inimigos que estão abaixo de 50% de Vida." },
+            { slot: "Peitoral", name_en: "Tokens of Vigilance", name_pt: "Símbolos de Vigilância", description: "`Potência Raivosa` também faz com que Ataques Primários causem dano adicional igual a uma porcentagem da sua vida máxima." },
+            { slot: "Ombros", name_en: "Grand Endurance", name_pt: "Resistência Suprema", description: "`Arrancada` (Urso) agora faz você saltar até o local de um alvo, causando dano a inimigos próximos e obtendo um escudo de absorção. Enquanto o escudo estiver ativado, você receberá dano reduzido." },
+            { slot: "Ombros", name_en: "Brae’s Bark", name_pt: "Latido da Colina", description: "Na forma de `Lobisomem`, você causa 10% de dano aumentado contra inimigos sob algum efeito de dano contínuo." },
+            { slot: "Ombros", name_en: "Peatspald", name_pt: "Lascaturfa", description: "`Arrancada` (Urso) aumenta sua velocidade de movimento em 40% por 3 segundos ao atingir um inimigo." },
+            { slot: "Ombros", name_en: "Promise the Obscure", name_pt: "Escuridão Prometida", description: "`Laceração` (Urso) agora desfere uma sequência de quatro ataques conforme você se move a uma direção, repelindo os inimigos. Você fica imune à repulsão e perda de controle durante os ataques." },
+            { slot: "Ombros", name_en: "All Are Prey", name_pt: "Tudo-presa", description: "Na forma de `Lobisomem`, você causa 20% a mais de dano aos inimigos, reduzido em 5% para cada aliado em um raio de 5 metros dos inimigos." },
+            { slot: "Ombros", name_en: "Pile of Plenty", name_pt: "Pilha da Fartura", description: "A recarga de `Arrancada` (Urso)` é reduzida em 0,5 segundos sempre que seu ataque primário acerta um inimigo, até o máximo de 2 segundos." },
+            { slot: "Ombros", name_en: "Thrill of the Hunt", name_pt: "Emoção da Caçada", description: "Na forma de `Lobisomem`, gera 3 de Energia Primitiva para cada inimigo abatido. Só pode ser ativado uma vez a cada segundo." },
+            { slot: "Ombros", name_en: "Bar-Ghaist Beacon", name_pt: "Sinal Barraspectro", description: "`Evocar Lobos` agora evoca lobos de fogo para lutar ao seu lado e queimar inimigos. Eles podem ser comandados a cuspir fogo e receber velocidade de ataque aumentada." },
+            { slot: "Ombros", name_en: "Soarskull", name_pt: "Planacrânio", description: "`Enxame de Corvos` também aumenta sua velocidade de movimento em 30% por 3 segundos." },
+            { slot: "Ombros", name_en: "The Great One", name_pt: "Maioral", description: "`Evocar Lobos` agora evoca um único Lobo Atroz que consome Energia Primitiva ao ser atingido para receber dano reduzido. É possível comandar o Lobo a investir aos inimigos." },
+            { slot: "Ombros", name_en: "Kiegfran", name_pt: "Kiegfran", description: "`Enxame de Corvos` também gera Energia Primitiva quando atinge um inimigo, mas este efeito não pode ocorrer com mais frequência do que uma vez a cada certo período." },
+            { slot: "Ombros", name_en: "Lethal Embrace", name_pt: "Abraço Letal", description: "Transformar-se em um `Lobisomem` aumenta sua Taxa de Esquiva por alguns segundos para cada ponto de Energia Primitiva que você possui atualmente, até um máximo." },
+            { slot: "Calças", name_en: "Unstoppable Redress", name_pt: "Reparação Implacável", description: "`Trincho Dilacerante` (Lobisomem) pode ser usado enquanto estiver sob efeitos de perda total de controle, consumindo 15 de Energia Primitiva e removendo o status." },
+            { slot: "Calças", name_en: "Thrivegreaves", name_pt: "Grevas Prósperas", description: "`Trincho Dilacerante` (Lobisomem) consome 5 de Energia Primitiva, aumentando sua chance de acerto crítico em 25%." },
+            { slot: "Calças", name_en: "Shattergrouse", name_pt: "Galo Estilhaço", description: "`Esmagamento` (Urso) também estilhaça a armadura dos inimigos, aumentando o dano que recebem em 15% por 3 segundos." },
+            { slot: "Calças", name_en: "Scorched Berth", name_pt: "Leito Calcinado", description: "`Investida do Cervo` agora salta ao local selecionado, gerando Energia Primitiva com base no número de inimigos atingidos." },
+            { slot: "Calças", name_en: "Ravager’s Trews", name_pt: "Calças da Destruição", description: "`Avanço` (Lobisomem) causa mais 25% de dano, mas consome 5 de Energia Primitiva ao ser usado." },
+            { slot: "Calças", name_en: "Ald Abundance", name_pt: "Velha Fartura", description: "`Potência Raivosa` agora aumenta sua vida máxima até você morrer e aumenta temporariamente o dano dos seus ataques primários com base na sua Energia Primitiva atual." },
+            { slot: "Calças", name_en: "Savagery Adored", name_pt: "Selvageria Venerada", description: "Usar `Trincho Dilacerante` (Lobisomem) também aumenta a chance de acerto crítico de ataques primários em 15% por 3 segundos." },
+            { slot: "Calças", name_en: "Lightling Drape", name_pt: "Pano Iluminado", description: "O dano de `Evocar Sábio da Floresta` aumenta em 5% por 5 segundos cada vez que ataca, até o máximo de 20%." },
+            { slot: "Calças", name_en: "Occasional Pillar", name_pt: "Pilar Casual", description: "`Pedra Impetuosa` causa 25% a mais de dano, mas consome mais 25% de Energia Primitiva." },
+            { slot: "Calças", name_en: "Mudrooters", name_pt: "Radículama", description: "Suas evocações de lobo curam você em 30% do dano que eles causam." },
+            { slot: "Calças", name_en: "Cackling Frenzy", name_pt: "Frenesi Risonho", description: "`Trincho Dilacerante` (Lobisomem) agora também aumenta seu Dreno de Vida contra os inimigos atingidos por um tempo limitado, com o efeito acumulando até um máximo." },
+            { slot: "Calças", name_en: "Tough Love", name_pt: "Amor Ríspido", description: "Ativar `Evocar Sábio da Floresta` aumenta o dano de suas evocações por um tempo limitado para cada evocação ativa, até um máximo." }
+        );
+        
+        const skillIcons = {
+            'Golpe Feroz': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm-3.4 5.5c-1.2 0-2.2.9-2.3 2.1l-3.3 3.3c-.4-.1-.8-.1-1.2 0L2.5 18v3.5h3.5l4.3-4.3c.1.4.1.8 0 1.2l-3.3 3.3c-1.2.1-2.1 1.1-2.1 2.3h5.5c.1-1.2 1.1-2.1 2.3-2.1s2.2.9 2.3 2.1h5.5c0-1.2-1-2.2-2.3-2.3l-3.3-3.3c-.1.4-.1.8 0 1.2l4.3 4.3h3.5V18l-3.8-3.8c.4-.1.8-.1 1.2 0l3.3-3.3c.1-1.2-1.1-2.1-2.3-2.1s-2.2.9-2.3 2.1l-3.3 3.3c.1.4.1.8 0 1.2l3.3 3.3c1.2-.1 2.3.8 2.3 2.1h-5.5c-.1-1.2-1.1-2.1-2.3-2.1s-2.2.9-2.3 2.1H5.4c0-1.2 1-2.2 2.3-2.3l3.3-3.3c.1.4.1.8 0 1.2L6.7 21.5h-3.2v-3.2l4.3-4.3c-.4-.1-.8-.1-1.2 0L2.5 18v3.5h3.5l3.3-3.3c1.2-.1 2.1-1.1 2.1-2.3s-1-2.2-2.3-2.3l-3.3-3.3c-.1.4-.1.8 0 1.2l3.3 3.3c1.2-.1 2.3.8 2.3 2.1H18.6c.1-1.2 1.1-2.1 2.3-2.1s2.2.9 2.3 2.1h-5.5c-.1-1.2-1.1-2.1-2.3-2.1z"/></svg>',
+            'Deslizamento': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 15v-5H6v-2h5V7l5 5-5 5z"/></svg>',
+            'Lobisomem': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.2,2.8 L12,6.1 L8.8,2.8 C9.9,1.7 11.1,1.1 12.3,1 C13.5,1.1 14.5,1.7 15.2,2.8 M18,8.5 C18,10.4 16.4,12 14.5,12 C12.6,12 11,10.4 11,8.5 C11,6.6 12.6,5 14.5,5 C16.4,5 18,6.6 18,8.5 M9.5,12 C11.4,12 13,10.4 13,8.5 C13,6.6 11.4,5 9.5,5 C7.6,5 6,6.6 6,8.5 C6,10.4 7.6,12 9.5,12 M20,17.5 C20,19.4 18.4,21 16.5,21 C14.6,21 13,19.4 13,17.5 C13,15.6 14.6,14 16.5,14 C18.4,14 20,15.6 20,17.5 M7.5,21 C9.4,21 11,19.4 11,17.5 C11,15.6 9.4,14 7.5,14 C5.6,14 4,15.6 4,17.5 C4,19.4 5.6,21 7.5,21"/></svg>',
+            'Urso': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5,6C17.9,6 19,4.9 19,3.5C19,2.1 17.9,1 16.5,1C15.1,1 14,2.1 14,3.5C14,4.9 15.1,6 16.5,6M7.5,6C8.9,6 10,4.9 10,3.5C10,2.1 8.9,1 7.5,1C6.1,1 5,2.1 5,3.5C5,4.9 6.1,6 7.5,6M12,13.5C14.5,13.5 16.5,11.5 16.5,9H7.5C7.5,11.5 9.5,13.5 12,13.5M18,15H6C3.8,15 2,16.8 2,19V20C2,21.1 2.9,22 4,22H20C21.1,22 22,21.1 22,20V19C22,16.8 20.2,15 18,15Z"/></svg>',
+            'Terremoto': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10,10-4.5,10-10S17.5,2,12,2z M11,15H8v-2h3V15z M11,11H8V9h3V11z M16,15h-3v-2h3V15z M16,11h-3V9h3V11z"/></svg>',
+            'Tornado de Fogo': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
+            'Evocar Lobos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10c5.5,0,10-4.5,10-10S17.5,2,12,2z M16,13h-3v3h-2v-3H8v-2h3V8h2v3h3V13z"/></svg>',
+            'Enxame de Corvos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3,3v18h18V3H3z M17,17H7v-2h10V17z M17,13H7v-2h10V13z M17,9H7V7h10V9z"/></svg>',
+            'Potência Raivosa': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10,10-4.48,10-10S17.52,2,12,2z M13,17h-2v-2h2V17z M13,13h-2V7h2V13z"/></svg>',
+            'Armadura de Espinhos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2L1,12l11,10l11-10L12,2z M12,18.2L3.8,12L12,5.8L20.2,12L12,18.2z"/></svg>',
+            'Evocar Sábio da Floresta': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.5 15h3v-3h-3v3zm0-5h3V7h-3v5z"/></svg>',
+            'Círculo da Vida': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>',
+            'Investida do Cervo': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 11.5L6.5 22h11L12 13.5z"/></svg>',
+            'Evocar Urso-cinzento': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10,10-4.5,10-10S17.5,2,12,2z M15,15H9v-2h6V15z M15,11H9V9h6V11z"/></svg>',
+            'Pedra Impetuosa': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 15c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>'
+        };
+
+        Object.assign(druidSkills, {
+            primary: ['Golpe Feroz', 'Deslizamento'],
+            active: [
+                "Lobisomem", "Urso", "Terremoto", "Tornado de Fogo", "Evocar Lobos", "Enxame de Corvos", 
+                "Potência Raivosa", "Armadura de Espinhos", "Evocar Sábio da Floresta", "Círculo da Vida", 
+                "Investida do Cervo", "Evocar Urso-cinzento", "Pedra Impetuosa"
+            ]
+        });
+        Object.assign(transformationSubSkills, {
+            'Lobisomem': ['Lobisomem', 'Trincho Dilacerante', 'Avanço', 'Uivo'],
+            'Urso': ['Urso', 'Esmagamento', 'Laceração', 'Arrancada']
+        });
+
+        // --- LÓGICA DA APLICAÇÃO ---
+        const gearSlots = {
+            'Elmo': { label: 'Elmo', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a5 5 0 0 0-5-5z"></path><path d="M4 13a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"></path><path d="M20 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"></path><path d="M12 13v8"></path><path d="M9 21h6"></path></svg>' },
+            'Peitoral': { label: 'Peitoral', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5.5 3.58 10.36 8 12 4.42-1.64 8-6.5 8-12V6z"></path></svg>' },
+            'Ombros': { label: 'Ombros', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5c0 1.93 1.57 3.5 3.5 3.5h1c1.93 0 3.5-1.57 3.5-3.5v-1a2.5 2.5 0 0 1 5 0v1c0 1.93 1.57 3.5 3.5 3.5h1c1.93 0 3.5-1.57 3.5-3.5z"></path></svg>' },
+            'Calças': { label: 'Calças', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2h6zm12 0v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V2h6zM9 10v10a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V10H9z"></path></svg>' },
+            'Mão Principal 1': { label: 'Mão Principal', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2.5l-5 5L3 14.5v6h6l7-7 5-5-5-5z"></path><path d="M18 6l-5 5"></path></svg>' },
+            'Mão Principal 2': { label: 'Mão Principal', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2.5l-5 5L3 14.5v6h6l7-7 5-5-5-5z"></path><path d="M18 6l-5 5"></path></svg>' },
+            'Mão Secundária 1': { label: 'Mão Secundária', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg>' },
+            'Mão Secundária 2': { label: 'Mão Secundária', icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg>' },
+        };
+        const gearSlotIds = Object.keys(gearSlots);
+        let buildState = { skills: [null, null, null, null, null], gear: {} };
+        let activeModal = { type: null, context: null };
+
+        function initializeBuild() {
+            gearSlotIds.forEach(id => buildState.gear[id] = null);
+            renderSkillSlots();
+            renderBuildSheet();
+            setupTooltipEvents();
+        }
+
+        // --- Funções de Renderização ---
+        function renderSkillSlots() {
+            const container = document.getElementById('skill-selection-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const skillName = buildState.skills[i];
+                const isEmpty = !skillName;
+                const slotType = i === 0 ? 'Primário' : 'Habilidade';
+                
+                const icon = isEmpty 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`
+                    : `<div class="w-10 h-10 text-white">${skillIcons[skillName] || ''}</div>`;
+
+                container.innerHTML += `
+                    <div id="skill-slot-${i}"
+                         onclick="openSkillModal(${i})"
+                         data-skill-name="${skillName || ''}"
+                         class="skill-slot w-24 cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg border-2 aspect-square
+                                ${isEmpty ? 'bg-gray-800/50 border-gray-700 border-dashed' : 'bg-gray-700 border-blue-500'}">
+                        <div class="flex-grow flex items-center justify-center">
+                            ${icon}
+                        </div>
+                        <p class="text-xs text-center font-semibold mt-1 leading-tight flex-shrink-0
+                                  ${isEmpty ? 'text-gray-500' : 'text-blue-300'}">
+                            ${isEmpty ? slotType : skillName}
+                        </p>
+                    </div>
+                `;
+            }
+            setupTooltipEvents();
+        }
+        
+        function renderBuildSheet() {
+            const container = document.getElementById('build-sheet');
+            container.innerHTML = `
+                <div class="col-start-2" style="grid-row: 1;">${renderSlot('Elmo')}</div>
+                <div class="col-start-2" style="grid-row: 2;">${renderSlot('Ombros')}</div>
+                <div class="col-start-2" style="grid-row: 3;">${renderSlot('Peitoral')}</div>
+                <div class="col-start-2" style="grid-row: 4;">${renderSlot('Calças')}</div>
+                
+                <div class="col-start-1" style="grid-row: 2;">${renderSlot('Mão Principal 1')}</div>
+                <div class="col-start-1" style="grid-row: 3;">${renderSlot('Mão Principal 2')}</div>
+
+                <div class="col-start-3" style="grid-row: 2;">${renderSlot('Mão Secundária 1')}</div>
+                <div class="col-start-3" style="grid-row: 3;">${renderSlot('Mão Secundária 2')}</div>
+            `;
+            setupTooltipEvents();
+        }
+
+        function renderSlot(id) {
+            const essence = buildState.gear[id];
+            const slotInfo = gearSlots[id];
+            const isEmpty = !essence;
+            const selectedSkills = buildState.skills.filter(Boolean);
+
+            let baseClasses = "gear-slot aspect-square rounded-lg border-2 flex flex-col items-center justify-center p-2";
+            let stateClasses = "";
+            let onClickAction = `openEssenceModal('${id}')`;
+
+            if (selectedSkills.length === 0) {
+                // Estado: Nenhuma habilidade selecionada -> Todos os slots desativados
+                stateClasses = "bg-gray-800/50 border-gray-700 border-dashed opacity-50 cursor-not-allowed disabled";
+                onClickAction = "";
+            } else {
+                // Estado: Habilidades selecionadas
+                let synergySkills = new Set();
+                selectedSkills.forEach(skill => {
+                    synergySkills.add(skill);
+                    if (transformationSubSkills[skill]) {
+                        transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
+                    }
+                    if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+                });
+                const synergyList = Array.from(synergySkills);
+                const hasCompatibleEssences = allEssences.some(e => 
+                    e.slot === slotInfo.label &&
+                    synergyList.some(skill => e.description.includes(`\`${skill}\``))
+                );
+
+                if (isEmpty) {
+                    if (hasCompatibleEssences) {
+                        stateClasses = "bg-gray-800/80 border-gray-700 border-dashed cursor-pointer";
+                    } else {
+                        // Slot Vazio e Sem Essências Compatíveis -> Visualmente atenuado mas clicável
+                        stateClasses = "bg-gray-800/50 border-gray-600 border-dashed cursor-pointer opacity-60";
+                    }
+                } else {
+                    // Slot Preenchido -> Visualmente ativo
+                    stateClasses = "border-blue-500 bg-gray-700/50 cursor-pointer";
+                }
+            }
+            
+            return `
+                <div id="${id}" 
+                     onclick="${onClickAction}" 
+                     data-essence='${JSON.stringify(essence)}'
+                     class="${baseClasses} ${stateClasses}">
+                    <div class="text-gray-400 ${!isEmpty ? 'text-blue-300' : ''}">${slotInfo.icon}</div>
+                    <p class="text-xs text-center font-semibold mt-1 truncate w-full ${isEmpty ? 'text-gray-500' : 'text-white'}">
+                        ${essence ? essence.name_pt : slotInfo.label}
+                    </p>
+                </div>
+            `;
+        }
+        
+        function highlightKeywords(text) {
+             return text.replace(/`([^`]+)`/g, '<code class="bg-gray-600 text-blue-300 font-mono rounded px-1 py-0.5 text-xs">\$1</code>');
+        }
+
+        // --- Lógica de Modais ---
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const overlay = document.getElementById('modal-overlay');
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.add('opacity-100');
+                modal.querySelector('.modal-content').classList.replace('scale-95', 'scale-100');
+            }, 10);
+        }
+
+        function closeAllModals() {
+            const overlay = document.getElementById('modal-overlay');
+            document.querySelectorAll('.modal-content').forEach(modalContent => {
+                modalContent.classList.replace('scale-100', 'scale-95');
+            });
+            overlay.classList.remove('opacity-100');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                document.getElementById('skill-modal').classList.add('hidden');
+                document.getElementById('essence-modal').classList.add('hidden');
+            }, 200);
+            activeModal = { type: null, context: null };
+        }
+
+        function openSkillModal(skillIndex) {
+            activeModal = { type: 'skill', context: skillIndex };
+            const skillList = skillIndex === 0 ? druidSkills.primary : druidSkills.active;
+            const container = document.getElementById('skill-modal-content');
+            
+            document.getElementById('skill-modal-title').textContent = skillIndex === 0 ? 'Escolher Ataque Primário' : `Escolher Habilidade`;
+            container.innerHTML = `<div onclick="selectSkill(null)" class="cursor-pointer text-center p-3 bg-gray-700 hover:bg-red-600 rounded-lg flex flex-col items-center gap-2"><div class="w-8 h-8 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg></div><p class="font-semibold">Nenhuma</p></div>`;
+
+            skillList.sort().forEach(skillName => {
+                const isDisabled = buildState.skills.includes(skillName) && buildState.skills[skillIndex] !== skillName;
+                container.innerHTML += `
+                    <div onclick="${isDisabled ? '' : `selectSkill('${skillName}')`}" class="${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-600'} text-center p-3 bg-gray-700 rounded-lg transition-colors flex flex-col items-center gap-2">
+                        <div class="w-10 h-10 text-white">${skillIcons[skillName] || ''}</div>
+                        <p class="font-semibold text-sm">${skillName}</p>
+                    </div>
+                `;
+            });
+            openModal('skill-modal');
+        }
+        
+        function openEssenceModal(slotId) {
+            activeModal = { type: 'essence', context: slotId };
+            const slotType = gearSlots[slotId].label;
+            const container = document.getElementById('essence-modal-content');
+
+            document.getElementById('essence-modal-title').textContent = `Selecionar - ${slotType}`;
+            
+            const selectedSkills = buildState.skills.filter(Boolean);
+            let synergySkills = new Set();
+            selectedSkills.forEach(skill => {
+                synergySkills.add(skill);
+                if (transformationSubSkills[skill]) {
+                    transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
+                }
+                if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+            });
+            const synergyList = Array.from(synergySkills);
+            
+            const relevantEssences = allEssences.filter(essence => 
+                essence.slot === slotType &&
+                (synergyList.length === 0 || synergyList.some(skill => essence.description.includes(`\`${skill}\``)))
+            );
+            
+            container.innerHTML = `<div onclick="selectEssence(null)" class="cursor-pointer p-3 bg-gray-700/50 hover:bg-red-600 rounded-lg text-center font-semibold">Remover Item</div>`;
+
+            if (relevantEssences.length > 0) {
+                relevantEssences.forEach(essence => {
+                    let isDisabled = false;
+                    if (slotType === 'Mão Principal') {
+                        const otherSlotEssence = slotId === 'Mão Principal 1' ? buildState.gear['Mão Principal 2'] : buildState.gear['Mão Principal 1'];
+                        if (otherSlotEssence && otherSlotEssence.name_en === essence.name_en) isDisabled = true;
+                    }
+                    if (slotType === 'Mão Secundária') {
+                        const otherSlotEssence = slotId === 'Mão Secundária 1' ? buildState.gear['Mão Secundária 2'] : buildState.gear['Mão Secundária 1'];
+                        if (otherSlotEssence && otherSlotEssence.name_en === essence.name_en) isDisabled = true;
+                    }
+                    
+                    container.innerHTML += `
+                        <div onclick="${isDisabled ? '' : `selectEssence('${essence.name_en}')`}" class="${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-700'} p-3 bg-gray-900/50 rounded-lg transition-colors">
+                            <h3 class="font-bold text-lg text-blue-300">${essence.name_pt}</h3>
+                            <p class="text-sm text-gray-400 font-mono mb-2">${essence.name_en}</p>
+                            <p class="text-gray-300">${highlightKeywords(essence.description)}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                let message = selectedSkills.length > 0
+                    ? `Nenhuma essência para '${slotType}' compatível com suas habilidades atuais foi encontrada.`
+                    : `Nenhuma essência encontrada para '${slotType}'. Escolha primeiro uma habilidade para ver as opções.`;
+                container.innerHTML += `<p class="text-center text-gray-400 p-4">${message}</p>`;
+            }
+            openModal('essence-modal');
+        }
+
+        // --- Lógica de Seleção e Tooltip ---
+        window.selectSkill = function(skillName) {
+            if (activeModal.type === 'skill') {
+                buildState.skills[activeModal.context] = skillName;
+                renderSkillSlots();
+                renderBuildSheet(); // ATUALIZA OS EQUIPAMENTOS TAMBÉM
+                closeAllModals();
+            }
+        }
+        
+        window.selectEssence = function(essenceNameEn) {
+            if (activeModal.type === 'essence') {
+                if (essenceNameEn) {
+                    buildState.gear[activeModal.context] = allEssences.find(e => e.name_en === essenceNameEn);
+                } else {
+                    buildState.gear[activeModal.context] = null;
+                }
+                renderBuildSheet();
+                closeAllModals();
+            }
+        }
+
+        function setupTooltipEvents() {
+            const tooltip = document.getElementById('tooltip');
+            
+            // Tooltips para Equipamentos
+            document.querySelectorAll('.gear-slot').forEach(slot => {
+                slot.addEventListener('mouseenter', (e) => {
+                    const selectedSkills = buildState.skills.filter(Boolean);
+                    if (selectedSkills.length === 0) {
+                        document.getElementById('tooltip-title').textContent = "Bloqueado";
+                        document.getElementById('tooltip-desc').innerHTML = "Selecione pelo menos uma habilidade para ativar os slots de equipamento.";
+                        tooltip.classList.remove('hidden');
+                        tooltip.classList.add('opacity-100');
+                        return;
+                    }
+
+                    const essenceData = slot.getAttribute('data-essence');
+                    if (essenceData && essenceData !== 'null') {
+                        const essence = JSON.parse(essenceData);
+                        document.getElementById('tooltip-title').textContent = essence.name_pt;
+                        document.getElementById('tooltip-desc').innerHTML = highlightKeywords(essence.description);
+                        tooltip.classList.remove('hidden');
+                        tooltip.classList.add('opacity-100');
+                    }
+                });
+
+                slot.addEventListener('mouseleave', () => {
+                    tooltip.classList.add('hidden');
+                    tooltip.classList.remove('opacity-100');
+                });
+                
+                slot.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = `${e.clientX + 15}px`;
+                    tooltip.style.top = `${e.clientY + 15}px`;
+                });
+            });
+
+            // Tooltips para Habilidades
+            document.querySelectorAll('.skill-slot').forEach(slot => {
+                slot.addEventListener('mouseenter', (e) => {
+                    const skillName = slot.getAttribute('data-skill-name');
+                    if (skillName) {
+                        document.getElementById('tooltip-title').textContent = skillName;
+                        document.getElementById('tooltip-desc').innerHTML = ''; // Sem descrição por enquanto
+                        tooltip.classList.remove('hidden');
+                        tooltip.classList.add('opacity-100');
+                    }
+                });
+                slot.addEventListener('mouseleave', () => {
+                    tooltip.classList.add('hidden');
+                    tooltip.classList.remove('opacity-100');
+                });
+                 slot.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = `${e.clientX + 15}px`;
+                    tooltip.style.top = `${e.clientY + 15}px`;
+                });
+            });
+        }
+
+        // --- Funções Gerais ---
+        function resetBuild() {
+            buildState = { skills: [null, null, null, null, null], gear: {} };
+            initializeBuild();
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            initializeBuild();
+            document.getElementById('resetBuildBtn').addEventListener('click', resetBuild);
+            document.getElementById('modal-overlay').addEventListener('click', closeAllModals);
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
+
