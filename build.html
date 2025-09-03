@@ -194,22 +194,23 @@
         );
         
         const skillIcons = {
-            'Golpe Feroz': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm-3.4 5.5c-1.2 0-2.2.9-2.3 2.1l-3.3 3.3c-.4-.1-.8-.1-1.2 0L2.5 18v3.5h3.5l4.3-4.3c.1.4.1.8 0 1.2l-3.3 3.3c-1.2.1-2.1 1.1-2.1 2.3h5.5c.1-1.2 1.1-2.1 2.3-2.1s2.2.9 2.3 2.1h5.5c0-1.2-1-2.2-2.3-2.3l-3.3-3.3c-.1.4-.1.8 0 1.2l4.3 4.3h3.5V18l-3.8-3.8c.4-.1.8-.1 1.2 0l3.3-3.3c.1-1.2-1.1-2.1-2.3-2.1s-2.2.9-2.3 2.1l-3.3 3.3c.1.4.1.8 0 1.2l3.3 3.3c1.2-.1 2.3.8 2.3 2.1h-5.5c-.1-1.2-1.1-2.1-2.3-2.1s-2.2.9-2.3 2.1H5.4c0-1.2 1-2.2 2.3-2.3l3.3-3.3c.1.4.1.8 0 1.2L6.7 21.5h-3.2v-3.2l4.3-4.3c-.4-.1-.8-.1-1.2 0L2.5 18v3.5h3.5l3.3-3.3c1.2-.1 2.1-1.1 2.1-2.3s-1-2.2-2.3-2.3l-3.3-3.3c-.1.4-.1.8 0 1.2l3.3 3.3c1.2-.1 2.3.8 2.3 2.1H18.6c.1-1.2 1.1-2.1 2.3-2.1s2.2.9 2.3 2.1h-5.5c-.1-1.2-1.1-2.1-2.3-2.1z"/></svg>',
-            'Deslizamento': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 15v-5H6v-2h5V7l5 5-5 5z"/></svg>',
-            'Lobisomem': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.2,2.8 L12,6.1 L8.8,2.8 C9.9,1.7 11.1,1.1 12.3,1 C13.5,1.1 14.5,1.7 15.2,2.8 M18,8.5 C18,10.4 16.4,12 14.5,12 C12.6,12 11,10.4 11,8.5 C11,6.6 12.6,5 14.5,5 C16.4,5 18,6.6 18,8.5 M9.5,12 C11.4,12 13,10.4 13,8.5 C13,6.6 11.4,5 9.5,5 C7.6,5 6,6.6 6,8.5 C6,10.4 7.6,12 9.5,12 M20,17.5 C20,19.4 18.4,21 16.5,21 C14.6,21 13,19.4 13,17.5 C13,15.6 14.6,14 16.5,14 C18.4,14 20,15.6 20,17.5 M7.5,21 C9.4,21 11,19.4 11,17.5 C11,15.6 9.4,14 7.5,14 C5.6,14 4,15.6 4,17.5 C4,19.4 5.6,21 7.5,21"/></svg>',
-            'Urso': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5,6C17.9,6 19,4.9 19,3.5C19,2.1 17.9,1 16.5,1C15.1,1 14,2.1 14,3.5C14,4.9 15.1,6 16.5,6M7.5,6C8.9,6 10,4.9 10,3.5C10,2.1 8.9,1 7.5,1C6.1,1 5,2.1 5,3.5C5,4.9 6.1,6 7.5,6M12,13.5C14.5,13.5 16.5,11.5 16.5,9H7.5C7.5,11.5 9.5,13.5 12,13.5M18,15H6C3.8,15 2,16.8 2,19V20C2,21.1 2.9,22 4,22H20C21.1,22 22,21.1 22,20V19C22,16.8 20.2,15 18,15Z"/></svg>',
-            'Terremoto': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10,10-4.5,10-10S17.5,2,12,2z M11,15H8v-2h3V15z M11,11H8V9h3V11z M16,15h-3v-2h3V15z M16,11h-3V9h3V11z"/></svg>',
-            'Tornado de Fogo': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
-            'Evocar Lobos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10c5.5,0,10-4.5,10-10S17.5,2,12,2z M16,13h-3v3h-2v-3H8v-2h3V8h2v3h3V13z"/></svg>',
-            'Enxame de Corvos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3,3v18h18V3H3z M17,17H7v-2h10V17z M17,13H7v-2h10V13z M17,9H7V7h10V9z"/></svg>',
-            'Potência Raivosa': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10,10-4.48,10-10S17.52,2,12,2z M13,17h-2v-2h2V17z M13,13h-2V7h2V13z"/></svg>',
-            'Armadura de Espinhos': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2L1,12l11,10l11-10L12,2z M12,18.2L3.8,12L12,5.8L20.2,12L12,18.2z"/></svg>',
-            'Evocar Sábio da Floresta': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.5 15h3v-3h-3v3zm0-5h3V7h-3v5z"/></svg>',
-            'Círculo da Vida': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>',
-            'Investida do Cervo': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 11.5L6.5 22h11L12 13.5z"/></svg>',
-            'Evocar Urso-cinzento': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10,10-4.5,10-10S17.5,2,12,2z M15,15H9v-2h6V15z M15,11H9V9h6V11z"/></svg>',
-            'Pedra Impetuosa': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 15c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>'
+            'Golpe Feroz': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/4I58T8GXLD511750697928760.jpeg" alt="Ícone da Habilidade Golpe Feroz" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Deslizamento': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/6OI5JM0QXC8Q1750697929148.jpeg" alt="Ícone da Habilidade Deslizamento" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Lobisomem': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/HWOXRIWDPB141750697931439.jpeg" alt="Ícone da Habilidade Lobisomem" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Urso': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/0K55CULBIGSX1750697931066.jpeg" alt="Ícone da Habilidade Urso" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Terremoto': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/HAWVFOW5R8G81750697927942.jpeg" alt="Ícone da Habilidade Terremoto" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Tornado de Fogo': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/GWEIMO60NON41750697928796.jpeg" alt="Ícone da Habilidade Tornado de Fogo" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Evocar Lobos': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/AA6QLKL6QZJS1750697930470.jpeg" alt="Ícone da Habilidade Evocar Lobos" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Enxame de Corvos': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/Y1KS41Y0BOKA1750697929592.jpeg" alt="Ícone da Habilidade Enxame de Corvos" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Potência Raivosa': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/YJ6OJTAFR2VX1750697929252.jpeg" alt="Ícone da Habilidade Potência Raivosa" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Armadura de Espinhos': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/U6S244E6U6391750697931009.jpeg" alt="Ícone da Habilidade Armadura de Espinhos" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Evocar Sábio da Floresta': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/5VM6HYSWCZWQ1750697930221.jpeg" alt="Ícone da Habilidade Evocar Sábio da Floresta" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Círculo da Vida': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/8N26X6VG65CU1750697927938.jpeg" alt="Ícone da Habilidade Círculo da Vida" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Investida do Cervo': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/166SILYTQOQM1750697929669.jpeg" alt="Ícone da Habilidade Investida do Cervo" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Evocar Urso-cinzento': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/ZMZOWLVZR2BJ1750697930098.jpeg" alt="Ícone da Habilidade Evocar Urso-cinzento" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">',
+            'Pedra Impetuosa': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/N135ENLSG9QI1750697930618.jpeg" alt="Ícone da Habilidade Pedra Impetuosa" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">'
         };
+
 
         Object.assign(druidSkills, {
             primary: ['Golpe Feroz', 'Deslizamento'],
@@ -256,8 +257,8 @@
                 const slotType = i === 0 ? 'Primário' : 'Habilidade';
                 
                 const icon = isEmpty 
-                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`
-                    : `<div class="w-10 h-10 text-white">${skillIcons[skillName] || ''}</div>`;
+                    ? `<div class="w-12 h-12 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg></div>`
+                    : `<div class="w-12 h-12">${skillIcons[skillName] || ''}</div>`;
 
                 container.innerHTML += `
                     <div id="skill-slot-${i}"
@@ -387,13 +388,13 @@
             const container = document.getElementById('skill-modal-content');
             
             document.getElementById('skill-modal-title').textContent = skillIndex === 0 ? 'Escolher Ataque Primário' : `Escolher Habilidade`;
-            container.innerHTML = `<div onclick="selectSkill(null)" class="cursor-pointer text-center p-3 bg-gray-700 hover:bg-red-600 rounded-lg flex flex-col items-center gap-2"><div class="w-8 h-8 text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg></div><p class="font-semibold">Nenhuma</p></div>`;
+            container.innerHTML = `<div onclick="selectSkill(null)" class="cursor-pointer text-center p-3 bg-gray-700 hover:bg-red-600 rounded-lg flex flex-col items-center gap-2"><div class="w-12 h-12 text-white flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg></div><p class="font-semibold">Nenhuma</p></div>`;
 
             skillList.sort().forEach(skillName => {
                 const isDisabled = buildState.skills.includes(skillName) && buildState.skills[skillIndex] !== skillName;
                 container.innerHTML += `
                     <div onclick="${isDisabled ? '' : `selectSkill('${skillName}')`}" class="${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-600'} text-center p-3 bg-gray-700 rounded-lg transition-colors flex flex-col items-center gap-2">
-                        <div class="w-10 h-10 text-white">${skillIcons[skillName] || ''}</div>
+                        <div class="w-12 h-12">${skillIcons[skillName] || ''}</div>
                         <p class="font-semibold text-sm">${skillName}</p>
                     </div>
                 `;
@@ -484,7 +485,7 @@
             document.querySelectorAll('.gear-slot').forEach(slot => {
                 slot.addEventListener('mouseenter', (e) => {
                     const selectedSkills = buildState.skills.filter(Boolean);
-                    if (selectedSkills.length === 0) {
+                    if (selectedSkills.length === 0 && slot.classList.contains('disabled')) {
                         document.getElementById('tooltip-title').textContent = "Bloqueado";
                         document.getElementById('tooltip-desc').innerHTML = "Selecione pelo menos uma habilidade para ativar os slots de equipamento.";
                         tooltip.classList.remove('hidden');
