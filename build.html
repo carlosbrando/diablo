@@ -37,6 +37,9 @@
         .tooltip {
             pointer-events: none; /* Garante que o tooltip não interfira com o mouse */
         }
+        textarea::placeholder {
+            color: #6b7280;
+        }
     </style>
 </head>
 <body class="text-gray-200 antialiased">
@@ -86,11 +89,20 @@
             <!-- Coluna de Controles (Esquerda) -->
             <div class="lg:w-[45%] bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-6 rounded-xl shadow-lg flex flex-col gap-6">
                 <div>
+                    <h2 class="text-2xl font-semibold text-white mb-4">Importar Build</h2>
+                    <textarea id="buildImporter" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg p-3 text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="6" placeholder="Cole o texto da sua build aqui..."></textarea>
+                    <button id="importBuildBtn" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">Importar Build</button>
+                </div>
+                
+                <hr class="border-gray-700">
+
+                <div>
                     <h2 class="text-2xl font-semibold text-white mb-4">1. Habilidades</h2>
                     <div id="skill-selection-container" class="flex flex-wrap justify-center gap-4">
                         <!-- Slots de Habilidade serão inseridos aqui -->
                     </div>
                 </div>
+
                  <div class="mt-auto pt-6 flex flex-col sm:flex-row gap-4">
                     <button id="shareBuildBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" /></svg>
@@ -238,6 +250,12 @@
             'Lobisomem': ['Lobisomem', 'Trincho Dilacerante', 'Avanço', 'Uivo'],
             'Urso': ['Urso', 'Esmagamento', 'Laceração', 'Arrancada']
         });
+        
+        const skillNameMap = {
+            "Ferocious Strike": "Golpe Feroz", "Landslide": "Deslizamento", "Werewolf": "Lobisomem",
+            "Summon Oak Sage": "Evocar Sábio da Floresta", "Raven Swarm": "Enxame de Corvos",
+            "Circle of Life": "Círculo da Vida", "Thorn Armor": "Armadura de Espinhos", "Rabid Might": "Potência Raivosa",
+        };
 
         // --- LÓGICA DA APLICAÇÃO ---
         const gearSlots = {
@@ -338,13 +356,15 @@
                     if (transformationSubSkills[skill]) {
                         transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
                     }
-                    if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+                     if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+                    if (skill === 'Evocar Lobos') synergySkills.add('lobo');
                 });
                 const synergyList = Array.from(synergySkills);
-                const hasCompatibleEssences = allEssences.some(e => 
-                    e.slot === slotInfo.label &&
-                    synergyList.some(skill => e.description.includes(`\`${skill}\``))
-                );
+                const hasCompatibleEssences = allEssences.some(e => {
+                    const descriptionLower = e.description.toLowerCase();
+                    return e.slot === slotInfo.label &&
+                        synergyList.some(skill => descriptionLower.includes(`\`${skill.toLowerCase()}\``) || descriptionLower.includes(skill.toLowerCase()));
+                });
 
                 if (isEmpty) {
                     if (hasCompatibleEssences) {
@@ -434,16 +454,15 @@
                 if (transformationSubSkills[skill]) {
                     transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
                 }
-                // Adições de palavras-chave específicas para sinergia
                 if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
-                if (skill === 'Evocar Lobos') synergySkills.add('lobo'); // Pega variações como "lobo" e "lobos"
+                if (skill === 'Evocar Lobos') synergySkills.add('lobo');
             });
             const synergyList = Array.from(synergySkills);
             
             const relevantEssences = allEssences.filter(essence => {
                 const descriptionLower = essence.description.toLowerCase();
                 return essence.slot === slotType &&
-                    (synergyList.length === 0 || synergyList.some(skill => descriptionLower.includes(skill.toLowerCase())));
+                    (synergyList.length === 0 || synergyList.some(skill => descriptionLower.includes(`\`${skill.toLowerCase()}\``) || descriptionLower.includes(skill.toLowerCase())));
             });
             
             container.innerHTML = `<div onclick="selectEssence(null)" class="cursor-pointer p-3 bg-gray-700/50 hover:bg-red-600 rounded-lg text-center font-semibold">Remover Item</div>`;
@@ -557,7 +576,7 @@
             });
         }
         
-        // --- Funções de Compartilhamento/URL ---
+        // --- Funções de Compartilhamento e Importação ---
         function generateBuildCode() {
             const skillIndices = buildState.skills.map(skill => skill ? allSkillNames.indexOf(skill) : -1);
             const gearIndices = gearSlotIds.map(id => buildState.gear[id] ? allEssenceNames.indexOf(buildState.gear[id].name_en) : -1);
@@ -619,6 +638,89 @@
             }
             document.body.removeChild(textArea);
         }
+        
+        function importBuildFromText() {
+            const text = document.getElementById('buildImporter').value;
+            if (!text.trim()) return;
+
+            const parsedSkills = new Set();
+            const parsedEssences = new Set();
+
+            const allPossibleNames = [
+                ...Object.keys(skillNameMap),
+                ...allSkillNames,
+                ...allEssenceNames
+            ].sort((a, b) => b.length - a.length);
+
+            let cleanedText = text.replace(/[\s/]+/g, '');
+
+            while(cleanedText.length > 0) {
+                let matchFound = false;
+                for (const name of allPossibleNames) {
+                    const cleanName = name.replace(/\s+/g, '');
+                    if (cleanedText.startsWith(cleanName)) {
+                        let portugueseSkillName = skillNameMap[name] || (allSkillNames.includes(name) ? name : null);
+                        if (portugueseSkillName) {
+                            parsedSkills.add(portugueseSkillName);
+                        } else {
+                           const essence = allEssences.find(e => e.name_en === name);
+                           if (essence) parsedEssences.add(essence);
+                        }
+                        cleanedText = cleanedText.substring(cleanName.length);
+                        matchFound = true;
+                        break;
+                    }
+                }
+                if (!matchFound) {
+                    cleanedText = cleanedText.substring(1);
+                }
+            }
+
+            // Montar a build
+            resetBuild();
+            const skillsArray = Array.from(parsedSkills);
+            let activeSkillCount = 0;
+            
+            // Atribuir primária primeiro
+            const primarySkill = skillsArray.find(s => druidSkills.primary.includes(s));
+            if (primarySkill) {
+                buildState.skills[0] = primarySkill;
+            }
+
+            // Atribuir ativas
+            skillsArray.forEach(skill => {
+                if (activeSkillCount < 4 && druidSkills.active.includes(skill)) {
+                    buildState.skills[activeSkillCount + 1] = skill;
+                    activeSkillCount++;
+                }
+            });
+
+            // Atribuir essências
+            let mainHandCount = 0;
+            let offHandCount = 0;
+            parsedEssences.forEach(essence => {
+                if (essence.slot === "Mão Principal") {
+                    if (mainHandCount === 0) buildState.gear['Mão Principal 1'] = essence;
+                    else if (mainHandCount === 1) buildState.gear['Mão Principal 2'] = essence;
+                    mainHandCount++;
+                } else if (essence.slot === "Mão Secundária") {
+                    if (offHandCount === 0) buildState.gear['Mão Secundária 1'] = essence;
+                    else if (offHandCount === 1) buildState.gear['Mão Secundária 2'] = essence;
+                    offHandCount++;
+                } else {
+                    const slotId = gearSlotIds.find(id => gearSlots[id].label === essence.slot);
+                    if (slotId) buildState.gear[slotId] = essence;
+                }
+            });
+
+            renderSkillSlots();
+            renderBuildSheet();
+            updateURLWithBuild();
+            
+            const importBtn = document.getElementById('importBuildBtn');
+            importBtn.textContent = "Build Importada!";
+            setTimeout(() => { importBtn.textContent = "Importar Build"; }, 2000);
+        }
 
         // --- Funções Gerais ---
         function resetBuild() {
@@ -633,6 +735,7 @@
         window.onload = () => {
             initializeBuild();
             document.getElementById('resetBuildBtn').addEventListener('click', resetBuild);
+            document.getElementById('importBuildBtn').addEventListener('click', importBuildFromText);
             document.getElementById('shareBuildBtn').addEventListener('click', copyShareLink);
             document.getElementById('modal-overlay').addEventListener('click', closeAllModals);
             document.addEventListener('keydown', (event) => {
@@ -644,5 +747,4 @@
     </script>
 </body>
 </html>
-
 
