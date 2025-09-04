@@ -100,7 +100,7 @@
 
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Coluna de Controles (Esquerda) -->
-            <div class="lg:w-[45%] bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-6 rounded-xl shadow-lg flex flex-col gap-6">
+            <div class="lg:w-1/2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-6 rounded-xl shadow-lg flex flex-col gap-6">
                 <div>
                     <h2 class="text-2xl font-semibold text-white mb-4">1. Habilidades</h2>
                     <div id="skill-selection-container" class="flex flex-wrap justify-center gap-4">
@@ -117,16 +117,19 @@
                         Compartilhar
                     </button>
                     <button id="resetBuildBtn" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 011-1zm10 8a1 1 0 011-1v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 011.885-.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101z" clip-rule="evenodd" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
+                        </svg>
+                        Limpar
                     </button>
                 </div>
             </div>
 
             <!-- Coluna da Build (Direita) -->
-            <div class="lg:w-[55%]">
+            <div class="lg:w-1/2">
                 <div class="sticky top-6">
                     <h2 class="text-2xl font-bold text-white mb-4 text-center lg:text-left">2. Equipamento</h2>
-                    <div id="build-sheet" class="grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto">
+                    <div id="build-sheet" class="grid grid-cols-2 gap-4 max-w-md mx-auto">
                         <!-- Layout da Ficha de Personagem -->
                     </div>
                 </div>
@@ -323,16 +326,18 @@
         function renderBuildSheet() {
             const container = document.getElementById('build-sheet');
             container.innerHTML = `
-                <div class="col-start-2" style="grid-row: 1;">${renderSlot('Elmo')}</div>
-                <div class="col-start-2" style="grid-row: 2;">${renderSlot('Ombros')}</div>
-                <div class="col-start-2" style="grid-row: 3;">${renderSlot('Peitoral')}</div>
-                <div class="col-start-2" style="grid-row: 4;">${renderSlot('Calças')}</div>
-                
-                <div class="col-start-1" style="grid-row: 2;">${renderSlot('Mão Principal 1')}</div>
-                <div class="col-start-1" style="grid-row: 3;">${renderSlot('Mão Principal 2')}</div>
-
-                <div class="col-start-3" style="grid-row: 2;">${renderSlot('Mão Secundária 1')}</div>
-                <div class="col-start-3" style="grid-row: 3;">${renderSlot('Mão Secundária 2')}</div>
+                <div class="space-y-4"> <!-- Coluna Esquerda -->
+                    ${renderSlot('Elmo')}
+                    ${renderSlot('Ombros')}
+                    ${renderSlot('Mão Principal 1')}
+                    ${renderSlot('Mão Principal 2')}
+                </div>
+                <div class="space-y-4"> <!-- Coluna Direita -->
+                    ${renderSlot('Peitoral')}
+                    ${renderSlot('Calças')}
+                    ${renderSlot('Mão Secundária 1')}
+                    ${renderSlot('Mão Secundária 2')}
+                </div>
             `;
             setupTooltipEvents();
         }
@@ -653,69 +658,49 @@
             const resultsDiv = document.getElementById('import-results');
             resetBuild();
 
-            // 1. Dicionário de Nomes e Aliases
+            let textToSearch = text.replace(/([a-z])([A-Z])/g, '$1 $2');
+            
             const nameMap = {};
             const sanitize = (str) => str.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
 
-            allSkillNames.forEach(skill => {
-                nameMap[sanitize(skill)] = { type: 'skill', data: skill };
-            });
+            allSkillNames.forEach(skill => { nameMap[sanitize(skill)] = { type: 'skill', data: skill }; });
             allEssences.forEach(essence => {
                 nameMap[sanitize(essence.name_pt)] = { type: 'essence', data: essence };
                 nameMap[sanitize(essence.name_en)] = { type: 'essence', data: essence };
             });
             
             Object.assign(nameMap, {
-                'werewolf': { type: 'skill', data: 'Lobisomem' },
-                'landslide': { type: 'skill', data: 'Deslizamento' },
-                'rabid might': { type: 'skill', data: 'Potência Raivosa' },
-                'raven swarm': { type: 'skill', data: 'Enxame de Corvos' },
-                'summon wolves': { type: 'skill', data: 'Evocar Lobos' },
-                'werebear': { type: 'skill', data: 'Urso' },
-                'summon oak sage': { type: 'skill', data: 'Evocar Sábio da Floresta' },
-                'summon grizzly': { type: 'skill', data: 'Evocar Urso-cinzento' },
-                'thorn armor': { type: 'skill', data: 'Armadura de Espinhos' },
-                'ferocious strike': { type: 'skill', data: 'Golpe Feroz' },
-                'surging stone': { type: 'skill', data: 'Pedra Impetuosa' },
-                'circle of life': { type: 'skill', data: 'Círculo da Vida' },
-                'hundred wings shade': nameMap[sanitize("Sombra das Cem Asas")] // Alias para nome sem apóstrofo
+                'werewolf': { type: 'skill', data: 'Lobisomem' }, 'landslide': { type: 'skill', data: 'Deslizamento' },
+                'rabid might': { type: 'skill', data: 'Potência Raivosa' }, 'raven swarm': { type: 'skill', data: 'Enxame de Corvos' },
+                'summon wolves': { type: 'skill', data: 'Evocar Lobos' }, 'werebear': { type: 'skill', data: 'Urso' },
+                'summon oak sage': { type: 'skill', data: 'Evocar Sábio da Floresta' }, 'summon grizzly': { type: 'skill', data: 'Evocar Urso-cinzento' },
+                'thorn armor': { type: 'skill', data: 'Armadura de Espinhos' }, 'ferocious strike': { type: 'skill', data: 'Golpe Feroz' },
+                'surging stone': { type: 'skill', data: 'Pedra Impetuosa' }, 'circle of life': { type: 'skill', data: 'Círculo da Vida' },
+                'hundred wings shade': nameMap[sanitize("Sombra das Cem Asas")]
             });
 
-            // 2. Prepara o texto e a lista de busca
-            let textToSearch = text
-                .replace(/([a-z])([A-Z])/g, '$1 $2')
-                .replace(/[\n\r/]/g, ' '); 
-            
-            let sanitizedText = sanitize(textToSearch);
-            
             const sortedKeys = Object.keys(nameMap).sort((a, b) => b.length - a.length);
-
             let foundSkills = new Set();
             let foundEssences = new Set();
-            
-            // 3. Busca "Guloso" (Greedy Search)
+            let sanitizedText = sanitize(textToSearch);
+
             sortedKeys.forEach(key => {
                 const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
                 if (sanitizedText.match(regex)) {
                     const item = nameMap[key];
-                    if (item.type === 'skill') {
-                        foundSkills.add(item.data);
-                    } else {
-                        foundEssences.add(item.data);
-                    }
+                    if (item.type === 'skill') foundSkills.add(item.data);
+                    else foundEssences.add(item.data);
                     sanitizedText = sanitizedText.replace(regex, '');
                 }
             });
             
             let tempSkills = [null, null, null, null, null];
             let activeSkillIndex = 1;
-
             const foundSkillsArray = Array.from(foundSkills);
 
             foundSkillsArray.filter(s => druidSkills.primary.includes(s)).forEach(skillName => {
                 if (!tempSkills[0]) tempSkills[0] = skillName;
             });
-
             foundSkillsArray.filter(s => druidSkills.active.includes(s)).forEach(skillName => {
                 if (activeSkillIndex < 5 && !tempSkills.includes(skillName)) {
                     tempSkills[activeSkillIndex++] = skillName;
@@ -755,6 +740,7 @@
             
             setTimeout(() => { closeAllModals(); }, 2500);
         }
+
 
         // --- Funções Gerais ---
         function resetBuild() {
