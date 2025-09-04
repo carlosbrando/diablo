@@ -91,10 +91,14 @@
                         <!-- Slots de Habilidade serão inseridos aqui -->
                     </div>
                 </div>
-                 <div class="mt-auto pt-6">
-                    <button id="resetBuildBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                 <div class="mt-auto pt-6 flex flex-col sm:flex-row gap-4">
+                    <button id="shareBuildBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" /></svg>
+                        Compartilhar Build
+                    </button>
+                    <button id="resetBuildBtn" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 011-1zm10 8a1 1 0 011-1v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 011.885-.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101z" clip-rule="evenodd" /></svg>
-                        Limpar Build
+                        Limpar
                     </button>
                 </div>
             </div>
@@ -250,9 +254,16 @@
         const gearSlotIds = Object.keys(gearSlots);
         let buildState = { skills: [null, null, null, null, null], gear: {} };
         let activeModal = { type: null, context: null };
+        
+        const allSkillNames = [...druidSkills.primary, ...druidSkills.active];
+        const allEssenceNames = allEssences.map(e => e.name_en);
+
 
         function initializeBuild() {
-            gearSlotIds.forEach(id => buildState.gear[id] = null);
+            if (!loadBuildFromURL()) {
+                gearSlotIds.forEach(id => buildState.gear[id] = null);
+                buildState.skills = [null, null, null, null, null];
+            }
             renderSkillSlots();
             renderBuildSheet();
             setupTooltipEvents();
@@ -318,11 +329,9 @@
             let onClickAction = `openEssenceModal('${id}')`;
 
             if (selectedSkills.length === 0) {
-                // Estado: Nenhuma habilidade selecionada -> Todos os slots desativados
                 stateClasses = "bg-gray-800/50 border-gray-700 border-dashed opacity-50 cursor-not-allowed disabled";
                 onClickAction = "";
             } else {
-                // Estado: Habilidades selecionadas
                 let synergySkills = new Set();
                 selectedSkills.forEach(skill => {
                     synergySkills.add(skill);
@@ -341,11 +350,9 @@
                     if (hasCompatibleEssences) {
                         stateClasses = "bg-gray-800/80 border-gray-700 border-dashed cursor-pointer";
                     } else {
-                        // Slot Vazio e Sem Essências Compatíveis -> Visualmente atenuado mas clicável
                         stateClasses = "bg-gray-800/50 border-gray-600 border-dashed cursor-pointer opacity-60";
                     }
                 } else {
-                    // Slot Preenchido -> Visualmente ativo
                     stateClasses = "border-blue-500 bg-gray-700/50 cursor-pointer";
                 }
             }
@@ -472,7 +479,8 @@
             if (activeModal.type === 'skill') {
                 buildState.skills[activeModal.context] = skillName;
                 renderSkillSlots();
-                renderBuildSheet(); // ATUALIZA OS EQUIPAMENTOS TAMBÉM
+                renderBuildSheet();
+                updateURLWithBuild();
                 closeAllModals();
             }
         }
@@ -485,6 +493,7 @@
                     buildState.gear[activeModal.context] = null;
                 }
                 renderBuildSheet();
+                updateURLWithBuild();
                 closeAllModals();
             }
         }
@@ -492,7 +501,6 @@
         function setupTooltipEvents() {
             const tooltip = document.getElementById('tooltip');
             
-            // Tooltips para Equipamentos
             document.querySelectorAll('.gear-slot').forEach(slot => {
                 slot.addEventListener('mouseenter', (e) => {
                     const selectedSkills = buildState.skills.filter(Boolean);
@@ -525,13 +533,12 @@
                 });
             });
 
-            // Tooltips para Habilidades
             document.querySelectorAll('.skill-slot').forEach(slot => {
                 slot.addEventListener('mouseenter', (e) => {
                     const skillName = slot.getAttribute('data-skill-name');
                     if (skillName) {
                         document.getElementById('tooltip-title').textContent = skillName;
-                        document.getElementById('tooltip-desc').innerHTML = ''; // Sem descrição por enquanto
+                        document.getElementById('tooltip-desc').innerHTML = '';
                         tooltip.classList.remove('hidden');
                         tooltip.classList.add('opacity-100');
                     }
@@ -546,17 +553,83 @@
                 });
             });
         }
+        
+        // --- Funções de Compartilhamento/URL ---
+        function generateBuildCode() {
+            const skillIndices = buildState.skills.map(skill => skill ? allSkillNames.indexOf(skill) : -1);
+            const gearIndices = gearSlotIds.map(id => buildState.gear[id] ? allEssenceNames.indexOf(buildState.gear[id].name_en) : -1);
+            const code = [...skillIndices, ...gearIndices].join(',');
+            return btoa(code);
+        }
+
+        function updateURLWithBuild() {
+            const code = generateBuildCode();
+            const newUrl = `${window.location.pathname}?build=${code}`;
+            history.pushState({ path: newUrl }, '', newUrl);
+        }
+
+        function loadBuildFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('build');
+            if (!code) return false;
+
+            try {
+                const decoded = atob(code);
+                const indices = decoded.split(',').map(Number);
+                
+                if (indices.length !== 13) return false; // 5 skills + 8 gear slots
+
+                const skillIndices = indices.slice(0, 5);
+                const gearIndices = indices.slice(5);
+
+                buildState.skills = skillIndices.map(i => i === -1 ? null : allSkillNames[i]);
+                gearSlotIds.forEach((id, index) => {
+                    const essenceIndex = gearIndices[index];
+                    buildState.gear[id] = essenceIndex === -1 ? null : allEssences.find(e => e.name_en === allEssenceNames[essenceIndex]);
+                });
+                return true;
+            } catch (e) {
+                console.error("Falha ao carregar a build da URL:", e);
+                return false;
+            }
+        }
+        
+        function copyShareLink() {
+            const btn = document.getElementById('shareBuildBtn');
+            const url = window.location.href;
+            
+            // Truque para copiar para a área de transferência
+            const textArea = document.createElement("textarea");
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    Link Copiado!
+                `;
+                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            } catch (err) {
+                console.error('Falha ao copiar link: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
 
         // --- Funções Gerais ---
         function resetBuild() {
             buildState = { skills: [null, null, null, null, null], gear: {} };
             initializeBuild();
+            updateURLWithBuild(); // Limpa a URL também
         }
 
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
             initializeBuild();
             document.getElementById('resetBuildBtn').addEventListener('click', resetBuild);
+            document.getElementById('shareBuildBtn').addEventListener('click', copyShareLink);
             document.getElementById('modal-overlay').addEventListener('click', closeAllModals);
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
