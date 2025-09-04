@@ -655,9 +655,9 @@
 
             let textToSearch = text
                 .replace(/[\n\r/]/g, ' ')
-                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase (LandslideWerewolf -> Landslide Werewolf)
                 .toLowerCase();
-            
+
             const nameMap = {};
             // Adiciona nomes oficiais e aliases
             allSkillNames.forEach(skill => {
@@ -669,6 +669,7 @@
             });
             // Adiciona aliases comuns de guias
             Object.assign(nameMap, {
+                'werewolf': { type: 'skill', data: 'Lobisomem' },
                 'landslide': { type: 'skill', data: 'Deslizamento' },
                 'rabid might': { type: 'skill', data: 'Potência Raivosa' },
                 'raven swarm': { type: 'skill', data: 'Enxame de Corvos' },
@@ -688,18 +689,18 @@
             let foundEssences = new Set();
             
             sortedKeys.forEach(key => {
-                if (textToSearch.includes(key)) {
+                const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                if (textToSearch.match(regex)) {
                     const item = nameMap[key];
                     if (item.type === 'skill') {
                         foundSkills.add(item.data);
                     } else {
                         foundEssences.add(item.data);
                     }
-                    textToSearch = textToSearch.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+                    textToSearch = textToSearch.replace(regex, '');
                 }
             });
             
-            // Monta a build com os itens encontrados
             let tempSkills = [null, null, null, null, null];
             let activeSkillIndex = 1;
 
@@ -746,6 +747,7 @@
             
             setTimeout(() => { closeAllModals(); }, 2500);
         }
+
 
         // --- Funções Gerais ---
         function resetBuild() {
