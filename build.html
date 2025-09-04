@@ -620,9 +620,16 @@
 
         // --- Funções Gerais ---
         function resetBuild() {
+            // Limpa o parâmetro 'build' da URL
+            history.pushState(null, '', window.location.pathname);
+            
+            // Redefine o estado da build para o padrão
             buildState = { skills: [null, null, null, null, null], gear: {} };
-            initializeBuild();
-            updateURLWithBuild(); // Limpa a URL também
+            gearSlotIds.forEach(id => buildState.gear[id] = null);
+
+            // Renderiza novamente a interface com o estado limpo
+            renderSkillSlots();
+            renderBuildSheet();
         }
 
         // --- INICIALIZAÇÃO ---
@@ -640,4 +647,5 @@
     </script>
 </body>
 </html>
+
 
