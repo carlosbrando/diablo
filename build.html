@@ -647,126 +647,96 @@
             }
             document.body.removeChild(textArea);
         }
-
+        
         function parseAndLoadBuild() {
             const text = document.getElementById('import-textarea').value;
-            const lines = text.split('\n').map(l => l.trim().toLowerCase()).filter(Boolean);
+            const resultsDiv = document.getElementById('import-results');
             
-            let tempBuild = {
-                skills: [null, null, null, null, null],
-                gear: {}
-            };
-            gearSlotIds.forEach(id => tempBuild.gear[id] = null);
+            // 1. Limpa a build atual antes de importar uma nova
+            resetBuild();
+
+            // 2. Prepara o texto de entrada
+            const cleanedText = text
+                .replace(/[\n\r/]/g, ' ') // Substitui quebras de linha e barras por espaços
+                .replace(/([a-z])([A-Z])/g, '$1 $2') // Adiciona espaço entre camelCase (ex: DPS (Bear)Landslide -> DPS (Bear) Landslide)
+                .toLowerCase();
+
+            let words = cleanedText.split(/\s+/).filter(Boolean); // Divide por espaços
             
-            let skillsFound = 0;
-            let gearFound = 0;
-            let unmatchedLines = [];
+            let foundSkills = new Set();
+            let foundEssences = new Set();
+            let unmatched = new Set(words);
 
-            const ignoredKeywords = ['pc', 'vithus', 'shalbas', 'harbinger', 'overloaded', 'lashed', 'ghosted', 'rabid might', 'dps', 'bear'];
-
-            lines.forEach(line => {
-                if (ignoredKeywords.some(keyword => line.includes(keyword))) {
-                    return; // Ignora linhas com palavras-chave de sets/gemas/títulos
-                }
-
-                let found = false;
-                
-                // Mapeamento de nomes em inglês para pt-br para o parser
-                const nameMappings = {
-                    'landslide': 'Deslizamento', 'rabid might': 'Potência Raivosa', 'raven swarm': 'Enxame de Corvos', 
-                    'summon wolves': 'Evocar Lobos', 'werebear': 'Urso', 'bounding accuracy': 'Precisão Arrancadora',
-                    'tokens of vigilance': 'Fichas de Vigilância', 'bar-ghaist beacon': 'Sinal Barraspectro',
-                    'shattergrouse': 'Galo Estilhaço', 'ald abundance': 'Velha Fartura', 'nyteflurry': 'Turbilhão da Noite',
-                    'lunar cradle': 'Berço Lunar', 'goring brace': 'Braçadeira Chifrada', 'mauler\'s mitt': 'Luva do Marretador'
-                };
-                
-                let ptName = nameMappings[line] || line;
-
-                // Tenta encontrar como Habilidade
-                const skill = allSkillNames.find(s => s.toLowerCase() === ptName);
-                if (skill) {
-                    const isPrimary = druidSkills.primary.includes(skill);
-                    if (isPrimary && !tempBuild.skills[0]) {
-                        tempBuild.skills[0] = skill;
-                        skillsFound++;
-                        found = true;
-                    } else if (!isPrimary) {
-                        const emptySlotIndex = tempBuild.skills.slice(1).indexOf(null);
-                        if (emptySlotIndex !== -1 && !tempBuild.skills.includes(skill)) {
-                            tempBuild.skills[emptySlotIndex + 1] = skill;
-                            skillsFound++;
-                            found = true;
-                        }
+            // 3. Mapeamento de nomes para busca
+            const searchableSkills = allSkillNames.map(name => ({ type: 'skill', name: name.toLowerCase(), data: name }));
+            const searchableEssences = allEssences.flatMap(essence => [
+                { type: 'essence', name: essence.name_en.toLowerCase(), data: essence },
+                { type: 'essence', name: essence.name_pt.toLowerCase(), data: essence }
+            ]);
+            const searchableItems = [...searchableSkills, ...searchableEssences];
+            
+            // 4. Lógica de busca e correspondência
+             for (let i = 0; i < words.length; i++) {
+                for (let j = 4; j > 0; j--) { // Procura por frases de até 4 palavras
+                    if (i + j > words.length) continue;
+                    let phrase = words.slice(i, i + j).join(' ');
+                    
+                    const match = searchableItems.find(item => item.name === phrase);
+                    if (match) {
+                        if(match.type === 'skill') foundSkills.add(match.data);
+                        if(match.type === 'essence') foundEssences.add(match.data);
+                        
+                        // Remove palavras correspondentes do conjunto de não correspondidos
+                        words.slice(i, i + j).forEach(w => unmatched.delete(w));
+                        i += j - 1; // Pula para a próxima palavra após a frase encontrada
+                        break;
                     }
                 }
+            }
 
-                // Tenta encontrar como Essência
-                if (!found) {
-                    const itemOptions = ptName.split('/').map(n => n.trim());
-                    for (const option of itemOptions) {
-                        const essence = allEssences.find(e => e.name_en.toLowerCase() === option || e.name_pt.toLowerCase() === option);
-                        if (essence) {
-                            const slotType = essence.slot;
-                            const targetSlots = gearSlotIds.filter(id => gearSlots[id].label === slotType);
-                            
-                            let placed = false;
-                            for (const slotId of targetSlots) {
-                                if (!tempBuild.gear[slotId]) {
-                                     // Checa se a essência já está no outro slot de arma (se aplicável)
-                                    let isDuplicate = false;
-                                    if (slotType === "Mão Principal") {
-                                        const otherSlot = (slotId === 'Mão Principal 1') ? 'Mão Principal 2' : 'Mão Principal 1';
-                                        if (tempBuild.gear[otherSlot] && tempBuild.gear[otherSlot].name_en === essence.name_en) {
-                                            isDuplicate = true;
-                                        }
-                                    }
-                                    if (slotType === "Mão Secundária") {
-                                        const otherSlot = (slotId === 'Mão Secundária 1') ? 'Mão Secundária 2' : 'Mão Secundária 1';
-                                        if (tempBuild.gear[otherSlot] && tempBuild.gear[otherSlot].name_en === essence.name_en) {
-                                            isDuplicate = true;
-                                        }
-                                    }
 
-                                    if(!isDuplicate) {
-                                        tempBuild.gear[slotId] = essence;
-                                        gearFound++;
-                                        placed = true;
-                                        break; // Para de procurar um slot para esta essência
-                                    }
-                                }
-                            }
-                            if (placed) {
-                                found = true;
-                                break; // Para de procurar outras opções na mesma linha (ex: A/B)
-                            }
-                        }
-                    }
-                }
-                
-                if (!found) {
-                    unmatchedLines.push(line);
+            // 5. Monta a build com os itens encontrados
+            let tempSkills = [null, null, null, null, null];
+            let activeSkillIndex = 1;
+
+            // Prioriza primárias, depois ativas
+            druidSkills.primary.forEach(primarySkill => {
+                if (foundSkills.has(primarySkill) && !tempSkills[0]) {
+                    tempSkills[0] = primarySkill;
                 }
             });
+            druidSkills.active.forEach(activeSkill => {
+                if (foundSkills.has(activeSkill) && activeSkillIndex < 5) {
+                    if (!tempSkills.includes(activeSkill)) {
+                        tempSkills[activeSkillIndex++] = activeSkill;
+                    }
+                }
+            });
+            buildState.skills = tempSkills;
 
-            buildState = tempBuild;
+            foundEssences.forEach(essence => {
+                const slotType = essence.slot;
+                const targetSlots = gearSlotIds.filter(id => gearSlots[id].label === slotType);
+                for (const slotId of targetSlots) {
+                    if (!buildState.gear[slotId]) {
+                        buildState.gear[slotId] = essence;
+                        break; 
+                    }
+                }
+            });
+            
+            // 6. Atualiza a UI e a URL
             renderSkillSlots();
             renderBuildSheet();
             updateURLWithBuild();
             
-            // Exibe os resultados
-            const resultsDiv = document.getElementById('import-results');
-            let resultsHTML = `<p class="text-green-400">Importação concluída!</p>`;
-            resultsHTML += `<p>${skillsFound} habilidades e ${gearFound} equipamentos encontrados.</p>`;
-            if (unmatchedLines.length > 0) {
-                resultsHTML += `<p class="text-yellow-400 mt-2">Não foi possível encontrar:</p><ul class="list-disc list-inside">`;
-                unmatchedLines.forEach(line => {
-                    resultsHTML += `<li>${line}</li>`;
-                });
-                resultsHTML += `</ul>`;
-            }
-            resultsDiv.innerHTML = resultsHTML;
+            // 7. Exibe o relatório
+            let skillsFoundCount = buildState.skills.filter(Boolean).length;
+            let gearFoundCount = Object.values(buildState.gear).filter(Boolean).length;
+            resultsDiv.innerHTML = `<p class="text-green-400">Importação concluída: ${skillsFoundCount} habilidades e ${gearFoundCount} equipamentos encontrados.</p>`;
+            
+            setTimeout(() => { closeAllModals(); }, 2000);
         }
-
 
         // --- Funções Gerais ---
         function resetBuild() {
