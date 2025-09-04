@@ -37,9 +37,6 @@
         .tooltip {
             pointer-events: none; /* Garante que o tooltip não interfira com o mouse */
         }
-        textarea::placeholder {
-            color: #6b7280;
-        }
     </style>
 </head>
 <body class="text-gray-200 antialiased">
@@ -79,38 +76,48 @@
         </div>
     </div>
 
+    <!-- Import Modal -->
+    <div id="import-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden p-4" onclick="closeAllModals()">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-full max-w-lg flex flex-col modal-content scale-95" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-xl font-bold text-white">Importar Build de Texto</h2>
+                <button onclick="closeAllModals()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-gray-400">Cole a lista de habilidades e equipamentos abaixo. O sistema tentará montar a build automaticamente.</p>
+                <textarea id="import-textarea" class="w-full h-48 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Exemplo:&#10;Lobisomem&#10;Evocar Lobos&#10;...&#10;Cajado das Hordas&#10;..."></textarea>
+                <button onclick="parseAndLoadBuild()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Importar</button>
+                <div id="import-results" class="text-sm text-gray-400 mt-2"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         <header class="text-center mb-10">
             <h1 class="text-4xl sm:text-5xl font-bold text-white tracking-tight">Construtor de Builds de Druida</h1>
-            <p class="text-lg text-gray-400 mt-2 max-w-2xl mx-auto">Crie e visualize sua build de Druida para Diablo Immortal de forma interativa.</p>
+            <p class="text-lg text-gray-400 mt-2 max-w-2xl mx-auto">Crie, salve e compartilhe sua build de Druida para Diablo Immortal de forma interativa.</p>
         </header>
 
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Coluna de Controles (Esquerda) -->
             <div class="lg:w-[45%] bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-6 rounded-xl shadow-lg flex flex-col gap-6">
                 <div>
-                    <h2 class="text-2xl font-semibold text-white mb-4">Importar Build</h2>
-                    <textarea id="buildImporter" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg p-3 text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="6" placeholder="Cole o texto da sua build aqui..."></textarea>
-                    <button id="importBuildBtn" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">Importar Build</button>
-                </div>
-                
-                <hr class="border-gray-700">
-
-                <div>
                     <h2 class="text-2xl font-semibold text-white mb-4">1. Habilidades</h2>
                     <div id="skill-selection-container" class="flex flex-wrap justify-center gap-4">
                         <!-- Slots de Habilidade serão inseridos aqui -->
                     </div>
                 </div>
-
                  <div class="mt-auto pt-6 flex flex-col sm:flex-row gap-4">
+                    <button onclick="openImportModal()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                        Importar Build
+                    </button>
                     <button id="shareBuildBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" /></svg>
-                        Compartilhar Build
+                        Compartilhar
                     </button>
                     <button id="resetBuildBtn" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 011-1zm10 8a1 1 0 011-1v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 011.885-.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101z" clip-rule="evenodd" /></svg>
-                        Limpar
                     </button>
                 </div>
             </div>
@@ -238,6 +245,7 @@
             'Pedra Impetuosa': '<img src="https://bnetcmsus-a.akamaihd.net/cms/page_media/N135ENLSG9QI1750697930618.jpeg" alt="Ícone de Pedra Impetuosa" class="w-full h-full object-cover rounded-md" onerror="this.onerror=null;this.src=\'https://placehold.co/64x64/1f2937/9ca3af?text=!\';">'
         };
 
+
         Object.assign(druidSkills, {
             primary: ['Golpe Feroz', 'Deslizamento'],
             active: [
@@ -250,12 +258,6 @@
             'Lobisomem': ['Lobisomem', 'Trincho Dilacerante', 'Avanço', 'Uivo'],
             'Urso': ['Urso', 'Esmagamento', 'Laceração', 'Arrancada']
         });
-        
-        const skillNameMap = {
-            "Ferocious Strike": "Golpe Feroz", "Landslide": "Deslizamento", "Werewolf": "Lobisomem",
-            "Summon Oak Sage": "Evocar Sábio da Floresta", "Raven Swarm": "Enxame de Corvos",
-            "Circle of Life": "Círculo da Vida", "Thorn Armor": "Armadura de Espinhos", "Rabid Might": "Potência Raivosa",
-        };
 
         // --- LÓGICA DA APLICAÇÃO ---
         const gearSlots = {
@@ -356,14 +358,14 @@
                     if (transformationSubSkills[skill]) {
                         transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
                     }
-                     if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+                    if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
                     if (skill === 'Evocar Lobos') synergySkills.add('lobo');
                 });
                 const synergyList = Array.from(synergySkills);
                 const hasCompatibleEssences = allEssences.some(e => {
                     const descriptionLower = e.description.toLowerCase();
                     return e.slot === slotInfo.label &&
-                        synergyList.some(skill => descriptionLower.includes(`\`${skill.toLowerCase()}\``) || descriptionLower.includes(skill.toLowerCase()));
+                        synergyList.some(skill => descriptionLower.includes(skill.toLowerCase()));
                 });
 
                 if (isEmpty) {
@@ -416,8 +418,15 @@
                 overlay.classList.add('hidden');
                 document.getElementById('skill-modal').classList.add('hidden');
                 document.getElementById('essence-modal').classList.add('hidden');
+                document.getElementById('import-modal').classList.add('hidden');
             }, 200);
             activeModal = { type: null, context: null };
+        }
+        
+        function openImportModal() {
+            document.getElementById('import-textarea').value = '';
+            document.getElementById('import-results').innerHTML = '';
+            openModal('import-modal');
         }
 
         function openSkillModal(skillIndex) {
@@ -462,7 +471,7 @@
             const relevantEssences = allEssences.filter(essence => {
                 const descriptionLower = essence.description.toLowerCase();
                 return essence.slot === slotType &&
-                    (synergyList.length === 0 || synergyList.some(skill => descriptionLower.includes(`\`${skill.toLowerCase()}\``) || descriptionLower.includes(skill.toLowerCase())));
+                    (synergyList.length === 0 || synergyList.some(skill => descriptionLower.includes(skill.toLowerCase())));
             });
             
             container.innerHTML = `<div onclick="selectEssence(null)" class="cursor-pointer p-3 bg-gray-700/50 hover:bg-red-600 rounded-lg text-center font-semibold">Remover Item</div>`;
@@ -638,89 +647,126 @@
             }
             document.body.removeChild(textArea);
         }
-        
-        function importBuildFromText() {
-            const text = document.getElementById('buildImporter').value;
-            if (!text.trim()) return;
 
-            const parsedSkills = new Set();
-            const parsedEssences = new Set();
+        function parseAndLoadBuild() {
+            const text = document.getElementById('import-textarea').value;
+            const lines = text.split('\n').map(l => l.trim().toLowerCase()).filter(Boolean);
+            
+            let tempBuild = {
+                skills: [null, null, null, null, null],
+                gear: {}
+            };
+            gearSlotIds.forEach(id => tempBuild.gear[id] = null);
+            
+            let skillsFound = 0;
+            let gearFound = 0;
+            let unmatchedLines = [];
 
-            const allPossibleNames = [
-                ...Object.keys(skillNameMap),
-                ...allSkillNames,
-                ...allEssenceNames
-            ].sort((a, b) => b.length - a.length);
+            const ignoredKeywords = ['pc', 'vithus', 'shalbas', 'harbinger', 'overloaded', 'lashed', 'ghosted', 'rabid might', 'dps', 'bear'];
 
-            let cleanedText = text.replace(/[\s/]+/g, '');
+            lines.forEach(line => {
+                if (ignoredKeywords.some(keyword => line.includes(keyword))) {
+                    return; // Ignora linhas com palavras-chave de sets/gemas/títulos
+                }
 
-            while(cleanedText.length > 0) {
-                let matchFound = false;
-                for (const name of allPossibleNames) {
-                    const cleanName = name.replace(/\s+/g, '');
-                    if (cleanedText.startsWith(cleanName)) {
-                        let portugueseSkillName = skillNameMap[name] || (allSkillNames.includes(name) ? name : null);
-                        if (portugueseSkillName) {
-                            parsedSkills.add(portugueseSkillName);
-                        } else {
-                           const essence = allEssences.find(e => e.name_en === name);
-                           if (essence) parsedEssences.add(essence);
+                let found = false;
+                
+                // Mapeamento de nomes em inglês para pt-br para o parser
+                const nameMappings = {
+                    'landslide': 'Deslizamento', 'rabid might': 'Potência Raivosa', 'raven swarm': 'Enxame de Corvos', 
+                    'summon wolves': 'Evocar Lobos', 'werebear': 'Urso', 'bounding accuracy': 'Precisão Arrancadora',
+                    'tokens of vigilance': 'Fichas de Vigilância', 'bar-ghaist beacon': 'Sinal Barraspectro',
+                    'shattergrouse': 'Galo Estilhaço', 'ald abundance': 'Velha Fartura', 'nyteflurry': 'Turbilhão da Noite',
+                    'lunar cradle': 'Berço Lunar', 'goring brace': 'Braçadeira Chifrada', 'mauler\'s mitt': 'Luva do Marretador'
+                };
+                
+                let ptName = nameMappings[line] || line;
+
+                // Tenta encontrar como Habilidade
+                const skill = allSkillNames.find(s => s.toLowerCase() === ptName);
+                if (skill) {
+                    const isPrimary = druidSkills.primary.includes(skill);
+                    if (isPrimary && !tempBuild.skills[0]) {
+                        tempBuild.skills[0] = skill;
+                        skillsFound++;
+                        found = true;
+                    } else if (!isPrimary) {
+                        const emptySlotIndex = tempBuild.skills.slice(1).indexOf(null);
+                        if (emptySlotIndex !== -1 && !tempBuild.skills.includes(skill)) {
+                            tempBuild.skills[emptySlotIndex + 1] = skill;
+                            skillsFound++;
+                            found = true;
                         }
-                        cleanedText = cleanedText.substring(cleanName.length);
-                        matchFound = true;
-                        break;
                     }
                 }
-                if (!matchFound) {
-                    cleanedText = cleanedText.substring(1);
+
+                // Tenta encontrar como Essência
+                if (!found) {
+                    const itemOptions = ptName.split('/').map(n => n.trim());
+                    for (const option of itemOptions) {
+                        const essence = allEssences.find(e => e.name_en.toLowerCase() === option || e.name_pt.toLowerCase() === option);
+                        if (essence) {
+                            const slotType = essence.slot;
+                            const targetSlots = gearSlotIds.filter(id => gearSlots[id].label === slotType);
+                            
+                            let placed = false;
+                            for (const slotId of targetSlots) {
+                                if (!tempBuild.gear[slotId]) {
+                                     // Checa se a essência já está no outro slot de arma (se aplicável)
+                                    let isDuplicate = false;
+                                    if (slotType === "Mão Principal") {
+                                        const otherSlot = (slotId === 'Mão Principal 1') ? 'Mão Principal 2' : 'Mão Principal 1';
+                                        if (tempBuild.gear[otherSlot] && tempBuild.gear[otherSlot].name_en === essence.name_en) {
+                                            isDuplicate = true;
+                                        }
+                                    }
+                                    if (slotType === "Mão Secundária") {
+                                        const otherSlot = (slotId === 'Mão Secundária 1') ? 'Mão Secundária 2' : 'Mão Secundária 1';
+                                        if (tempBuild.gear[otherSlot] && tempBuild.gear[otherSlot].name_en === essence.name_en) {
+                                            isDuplicate = true;
+                                        }
+                                    }
+
+                                    if(!isDuplicate) {
+                                        tempBuild.gear[slotId] = essence;
+                                        gearFound++;
+                                        placed = true;
+                                        break; // Para de procurar um slot para esta essência
+                                    }
+                                }
+                            }
+                            if (placed) {
+                                found = true;
+                                break; // Para de procurar outras opções na mesma linha (ex: A/B)
+                            }
+                        }
+                    }
                 }
-            }
-
-            // Montar a build
-            resetBuild();
-            const skillsArray = Array.from(parsedSkills);
-            let activeSkillCount = 0;
-            
-            // Atribuir primária primeiro
-            const primarySkill = skillsArray.find(s => druidSkills.primary.includes(s));
-            if (primarySkill) {
-                buildState.skills[0] = primarySkill;
-            }
-
-            // Atribuir ativas
-            skillsArray.forEach(skill => {
-                if (activeSkillCount < 4 && druidSkills.active.includes(skill)) {
-                    buildState.skills[activeSkillCount + 1] = skill;
-                    activeSkillCount++;
+                
+                if (!found) {
+                    unmatchedLines.push(line);
                 }
             });
 
-            // Atribuir essências
-            let mainHandCount = 0;
-            let offHandCount = 0;
-            parsedEssences.forEach(essence => {
-                if (essence.slot === "Mão Principal") {
-                    if (mainHandCount === 0) buildState.gear['Mão Principal 1'] = essence;
-                    else if (mainHandCount === 1) buildState.gear['Mão Principal 2'] = essence;
-                    mainHandCount++;
-                } else if (essence.slot === "Mão Secundária") {
-                    if (offHandCount === 0) buildState.gear['Mão Secundária 1'] = essence;
-                    else if (offHandCount === 1) buildState.gear['Mão Secundária 2'] = essence;
-                    offHandCount++;
-                } else {
-                    const slotId = gearSlotIds.find(id => gearSlots[id].label === essence.slot);
-                    if (slotId) buildState.gear[slotId] = essence;
-                }
-            });
-
+            buildState = tempBuild;
             renderSkillSlots();
             renderBuildSheet();
             updateURLWithBuild();
             
-            const importBtn = document.getElementById('importBuildBtn');
-            importBtn.textContent = "Build Importada!";
-            setTimeout(() => { importBtn.textContent = "Importar Build"; }, 2000);
+            // Exibe os resultados
+            const resultsDiv = document.getElementById('import-results');
+            let resultsHTML = `<p class="text-green-400">Importação concluída!</p>`;
+            resultsHTML += `<p>${skillsFound} habilidades e ${gearFound} equipamentos encontrados.</p>`;
+            if (unmatchedLines.length > 0) {
+                resultsHTML += `<p class="text-yellow-400 mt-2">Não foi possível encontrar:</p><ul class="list-disc list-inside">`;
+                unmatchedLines.forEach(line => {
+                    resultsHTML += `<li>${line}</li>`;
+                });
+                resultsHTML += `</ul>`;
+            }
+            resultsDiv.innerHTML = resultsHTML;
         }
+
 
         // --- Funções Gerais ---
         function resetBuild() {
@@ -735,7 +781,6 @@
         window.onload = () => {
             initializeBuild();
             document.getElementById('resetBuildBtn').addEventListener('click', resetBuild);
-            document.getElementById('importBuildBtn').addEventListener('click', importBuildFromText);
             document.getElementById('shareBuildBtn').addEventListener('click', copyShareLink);
             document.getElementById('modal-overlay').addEventListener('click', closeAllModals);
             document.addEventListener('keydown', (event) => {
