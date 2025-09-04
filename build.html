@@ -653,21 +653,18 @@
             const resultsDiv = document.getElementById('import-results');
             resetBuild();
 
-            let textToSearch = text
-                .replace(/[\n\r/]/g, ' ')
-                .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase (LandslideWerewolf -> Landslide Werewolf)
-                .toLowerCase();
-
+            // 1. Dicionário de Nomes e Aliases
             const nameMap = {};
-            // Adiciona nomes oficiais e aliases
+            const sanitize = (str) => str.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+
             allSkillNames.forEach(skill => {
-                nameMap[skill.toLowerCase()] = { type: 'skill', data: skill };
+                nameMap[sanitize(skill)] = { type: 'skill', data: skill };
             });
             allEssences.forEach(essence => {
-                nameMap[essence.name_pt.toLowerCase()] = { type: 'essence', data: essence };
-                nameMap[essence.name_en.toLowerCase()] = { type: 'essence', data: essence };
+                nameMap[sanitize(essence.name_pt)] = { type: 'essence', data: essence };
+                nameMap[sanitize(essence.name_en)] = { type: 'essence', data: essence };
             });
-            // Adiciona aliases comuns de guias
+            
             Object.assign(nameMap, {
                 'werewolf': { type: 'skill', data: 'Lobisomem' },
                 'landslide': { type: 'skill', data: 'Deslizamento' },
@@ -680,37 +677,48 @@
                 'thorn armor': { type: 'skill', data: 'Armadura de Espinhos' },
                 'ferocious strike': { type: 'skill', data: 'Golpe Feroz' },
                 'surging stone': { type: 'skill', data: 'Pedra Impetuosa' },
-                'circle of life': { type: 'skill', data: 'Círculo da Vida' }
+                'circle of life': { type: 'skill', data: 'Círculo da Vida' },
+                'hundred wings shade': nameMap[sanitize("Sombra das Cem Asas")] // Alias para nome sem apóstrofo
             });
 
+            // 2. Prepara o texto e a lista de busca
+            let textToSearch = text
+                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .replace(/[\n\r/]/g, ' '); 
+            
+            let sanitizedText = sanitize(textToSearch);
+            
             const sortedKeys = Object.keys(nameMap).sort((a, b) => b.length - a.length);
 
             let foundSkills = new Set();
             let foundEssences = new Set();
             
+            // 3. Busca "Guloso" (Greedy Search)
             sortedKeys.forEach(key => {
                 const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-                if (textToSearch.match(regex)) {
+                if (sanitizedText.match(regex)) {
                     const item = nameMap[key];
                     if (item.type === 'skill') {
                         foundSkills.add(item.data);
                     } else {
                         foundEssences.add(item.data);
                     }
-                    textToSearch = textToSearch.replace(regex, '');
+                    sanitizedText = sanitizedText.replace(regex, '');
                 }
             });
             
             let tempSkills = [null, null, null, null, null];
             let activeSkillIndex = 1;
 
-            foundSkills.forEach(skillName => {
-                 if (druidSkills.primary.includes(skillName) && !tempSkills[0]) {
-                    tempSkills[0] = skillName;
-                } else if (druidSkills.active.includes(skillName) && activeSkillIndex < 5) {
-                     if (!tempSkills.includes(skillName)) {
-                        tempSkills[activeSkillIndex++] = skillName;
-                    }
+            const foundSkillsArray = Array.from(foundSkills);
+
+            foundSkillsArray.filter(s => druidSkills.primary.includes(s)).forEach(skillName => {
+                if (!tempSkills[0]) tempSkills[0] = skillName;
+            });
+
+            foundSkillsArray.filter(s => druidSkills.active.includes(s)).forEach(skillName => {
+                if (activeSkillIndex < 5 && !tempSkills.includes(skillName)) {
+                    tempSkills[activeSkillIndex++] = skillName;
                 }
             });
             buildState.skills = tempSkills;
@@ -747,7 +755,6 @@
             
             setTimeout(() => { closeAllModals(); }, 2500);
         }
-
 
         // --- Funções Gerais ---
         function resetBuild() {
