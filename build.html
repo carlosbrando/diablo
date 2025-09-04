@@ -434,14 +434,17 @@
                 if (transformationSubSkills[skill]) {
                     transformationSubSkills[skill].forEach(subSkill => synergySkills.add(subSkill));
                 }
+                // Adições de palavras-chave específicas para sinergia
                 if (skill === 'Evocar Urso-cinzento') synergySkills.add('Urso-cinzento');
+                if (skill === 'Evocar Lobos') synergySkills.add('lobo'); // Pega variações como "lobo" e "lobos"
             });
             const synergyList = Array.from(synergySkills);
             
-            const relevantEssences = allEssences.filter(essence => 
-                essence.slot === slotType &&
-                (synergyList.length === 0 || synergyList.some(skill => essence.description.includes(`\`${skill}\``)))
-            );
+            const relevantEssences = allEssences.filter(essence => {
+                const descriptionLower = essence.description.toLowerCase();
+                return essence.slot === slotType &&
+                    (synergyList.length === 0 || synergyList.some(skill => descriptionLower.includes(skill.toLowerCase())));
+            });
             
             container.innerHTML = `<div onclick="selectEssence(null)" class="cursor-pointer p-3 bg-gray-700/50 hover:bg-red-600 rounded-lg text-center font-semibold">Remover Item</div>`;
 
@@ -641,4 +644,5 @@
     </script>
 </body>
 </html>
+
 
