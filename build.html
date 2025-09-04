@@ -651,54 +651,60 @@
         function parseAndLoadBuild() {
             const text = document.getElementById('import-textarea').value;
             const resultsDiv = document.getElementById('import-results');
-            
             resetBuild();
 
             let textToSearch = text
-                .replace(/[\n\r/]/g, ' ') 
+                .replace(/[\n\r/]/g, ' ')
                 .replace(/([a-z])([A-Z])/g, '$1 $2')
                 .toLowerCase();
+            
+            const nameMap = {};
+            // Adiciona nomes oficiais e aliases
+            allSkillNames.forEach(skill => {
+                nameMap[skill.toLowerCase()] = { type: 'skill', data: skill };
+            });
+            allEssences.forEach(essence => {
+                nameMap[essence.name_pt.toLowerCase()] = { type: 'essence', data: essence };
+                nameMap[essence.name_en.toLowerCase()] = { type: 'essence', data: essence };
+            });
+            // Adiciona aliases comuns de guias
+            Object.assign(nameMap, {
+                'landslide': { type: 'skill', data: 'Deslizamento' },
+                'rabid might': { type: 'skill', data: 'Potência Raivosa' },
+                'raven swarm': { type: 'skill', data: 'Enxame de Corvos' },
+                'summon wolves': { type: 'skill', data: 'Evocar Lobos' },
+                'werebear': { type: 'skill', data: 'Urso' },
+                'summon oak sage': { type: 'skill', data: 'Evocar Sábio da Floresta' },
+                'summon grizzly': { type: 'skill', data: 'Evocar Urso-cinzento' },
+                'thorn armor': { type: 'skill', data: 'Armadura de Espinhos' },
+                'ferocious strike': { type: 'skill', data: 'Golpe Feroz' },
+                'surging stone': { type: 'skill', data: 'Pedra Impetuosa' },
+                'circle of life': { type: 'skill', data: 'Círculo da Vida' }
+            });
 
-            const nameMappings = {
-                'landslide': 'deslizamento', 'rabid might': 'potência raivosa', 'raven swarm': 'enxame de corvos', 
-                'summon wolves': 'evocar lobos', 'werebear': 'urso', 'summon oak sage': 'evocar sábio da floresta', 
-                'summon grizzly': 'evocar urso-cinzento', 'bounding accuracy': 'precisão arrancadora',
-                'tokens of vigilance': 'fichas de vigilância', 'bar-ghaist beacon': 'sinal barraspectro',
-                'shattergrouse': 'galo estilhaço', 'ald abundance': 'velha fartura', 'nyteflurry': 'turbilhão da noite',
-                'lunar cradle': 'berço lunar', 'goring brace': 'braçadeira chifrada', "mauler's mitt": 'luva do marretador',
-                'saved by nature': 'salvo pela natureza', 'mudrooters': 'radículama', 'rattling shell': 'casco estridente',
-                'staff of droves': 'cajado das hordas', 'hungry blades': 'lâminas glutonas', 'sapling claw': 'garra do rebento',
-                'gilded majesty': 'majestade dourada', 'circle of life': 'círculo da vida'
-            };
-
-            for(const [key, value] of Object.entries(nameMappings)) {
-                textToSearch = textToSearch.replace(new RegExp(key, 'g'), value);
-            }
+            const sortedKeys = Object.keys(nameMap).sort((a, b) => b.length - a.length);
 
             let foundSkills = new Set();
             let foundEssences = new Set();
-
-            const searchableItems = [
-                ...allSkillNames.map(name => ({ type: 'skill', name: name.toLowerCase(), data: name })),
-                ...allEssences.map(essence => ({ type: 'essence', name: essence.name_pt.toLowerCase(), data: essence }))
-            ].sort((a, b) => b.name.length - a.name.length);
-
-            for (const item of searchableItems) {
-                if (textToSearch.includes(item.name)) {
+            
+            sortedKeys.forEach(key => {
+                if (textToSearch.includes(key)) {
+                    const item = nameMap[key];
                     if (item.type === 'skill') {
                         foundSkills.add(item.data);
                     } else {
                         foundEssences.add(item.data);
                     }
-                    textToSearch = textToSearch.replace(new RegExp(item.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+                    textToSearch = textToSearch.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
                 }
-            }
-
+            });
+            
+            // Monta a build com os itens encontrados
             let tempSkills = [null, null, null, null, null];
             let activeSkillIndex = 1;
 
             foundSkills.forEach(skillName => {
-                if (druidSkills.primary.includes(skillName) && !tempSkills[0]) {
+                 if (druidSkills.primary.includes(skillName) && !tempSkills[0]) {
                     tempSkills[0] = skillName;
                 } else if (druidSkills.active.includes(skillName) && activeSkillIndex < 5) {
                      if (!tempSkills.includes(skillName)) {
@@ -740,7 +746,6 @@
             
             setTimeout(() => { closeAllModals(); }, 2500);
         }
-
 
         // --- Funções Gerais ---
         function resetBuild() {
